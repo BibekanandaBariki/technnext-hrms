@@ -36,16 +36,16 @@ A comprehensive Human Resource Management System (HRMS) built with NestJS (Backe
 ## 🏃‍♂️ Getting Started
 
 ### 1. clone the repository
-\`\`\`bash
+```bash
 git clone <repository-url>
-cd technext-hrms
-\`\`\`
+cd technnext-hrms
+```
 
 ### 2. Infrastructure Setup (Database)
 Start the PostgreSQL and Redis containers:
-\`\`\`bash
+```bash
 docker-compose up -d
-\`\`\`
+```
 
 ### 3. Backend Setup
 Navigate to the backend directory:

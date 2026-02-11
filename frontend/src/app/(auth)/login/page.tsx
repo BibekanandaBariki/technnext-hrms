@@ -58,7 +58,7 @@ export default function LoginPage() {
 
         } catch (error: any) {
             console.error(error)
-            const message = error.response?.data?.message || "Invalid credentials"
+            const message = error?.response?.data?.message || "Invalid credentials"
             toast.error(message)
         } finally {
             setIsLoading(false)

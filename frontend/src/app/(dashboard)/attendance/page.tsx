@@ -55,7 +55,7 @@ export default function AttendancePage() {
             fetchData() // Refresh
         } catch (error: any) {
             console.error(error)
-            const msg = error.response?.data?.message || "Action failed"
+            const msg = error?.response?.data?.message || "Action failed"
             toast.error(msg)
         } finally {
             setActionLoading(false)
@@ -70,7 +70,7 @@ export default function AttendancePage() {
             <div className="grid gap-6 md:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Today's Status</CardTitle>
+                        <CardTitle>Today&apos;s Status</CardTitle>
                         <CardDescription>{format(new Date(), 'EEEE, MMMM do, yyyy')}</CardDescription>
                     </CardHeader>
                     <CardContent>

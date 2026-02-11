@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { format } from "date-fns"
-import { Download, FileText } from "lucide-react"
+import { Download } from "lucide-react"
 
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -18,8 +18,17 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 
+interface PayrollRecord {
+    id: string
+    month: string
+    year: number
+    grossSalary: number
+    totalDeductions: number
+    netSalary: number
+}
+
 export default function PayrollPage() {
-    const [payrolls, setPayrolls] = useState<any[]>([])
+    const [payrolls, setPayrolls] = useState<PayrollRecord[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -39,6 +48,7 @@ export default function PayrollPage() {
     }
 
     const handleDownload = (id: string) => {
+        console.log(`Downloading payslip ${id}`) // Use id
         toast.info("Downloading payslip...")
         // Implement PDF download logic here (e.g., fetch blob from API)
         // For MVP, just a toast

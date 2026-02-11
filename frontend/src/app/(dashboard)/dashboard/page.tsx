@@ -5,11 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Users, UserCheck, CalendarDays, Briefcase } from "lucide-react"
 import api from "@/lib/api"
-import { toast } from "sonner"
+// import { toast } from "sonner" // Removed unused toast
+
+interface DashboardStats {
+    totalEmployees: number
+    activeEmployees: number
+    onLeaveToday: number
+    openPositions: number
+}
+
+interface User {
+    role: string
+    firstName: string
+    lastName: string
+}
 
 export default function DashboardPage() {
-    const [stats, setStats] = useState<any>(null)
-    const [user, setUser] = useState<any>(null)
+    const [stats, setStats] = useState<DashboardStats | null>(null)
+    const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {

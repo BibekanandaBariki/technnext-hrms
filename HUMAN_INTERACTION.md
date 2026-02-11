@@ -13,16 +13,16 @@ Ensure the following are installed on your system:
 ## Step 1: Clone and Prepare
 1.  Open your terminal.
 2.  Clone the repository (if you haven't already):
-    \`\`\`bash
+    ```bash
     git clone <repository-url>
-    cd technext-hrms
-    \`\`\`
+    cd technnext-hrms
+    ```
 
 ## Step 2: Database Infrastructure
 We use Docker to run the database and cache.
 
 1.  Start the infrastructure:
-    \`\`\`bash
+    ```bash
     docker-compose up -d
     \`\`\`
 2.  Verify containers are running:
@@ -56,19 +56,19 @@ Configuring the server API.
     Apply the database schema:
     \`\`\`bash
     npx prisma migrate dev --name init
-    \`\`\`
+    ```
 
 5.  **Seed Initial Data**:
     Create an Admin user and sample data:
-    \`\`\`bash
+    ```bash
     npx prisma db seed
-    \`\`\`
-    *This creates user: `admin@technexthrms.com` / password: `admin123`*
+    ```
+    *This creates user: `admin@technnexthrms.com` / password: `admin123`*
 
 6.  **Start the Server**:
-    \`\`\`bash
+    ```bash
     npm run start:dev
-    \`\`\`
+    ```
     The backend should now be running at `http://localhost:3001`.
 
 ## Step 4: Frontend Setup (Next.js)
@@ -99,7 +99,7 @@ Setting up the user interface.
 1.  Open your browser to [http://localhost:3000](http://localhost:3000).
 2.  You should see the Login Page.
 3.  Login with the default Admin credentials:
-    - **Email**: `admin@technexthrms.com`
+    - **Email**: `admin@technnexthrms.com`
     - **Password**: `admin123`
 4.  You will be redirected to the **Dashboard**.
 

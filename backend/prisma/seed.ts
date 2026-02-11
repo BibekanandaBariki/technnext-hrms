@@ -7,7 +7,7 @@ async function main() {
     console.log('Seeding database...');
 
     // Create Admin User
-    const adminEmail = 'admin@technexthrms.com';
+    const adminEmail = 'admin@technnexthrms.com';
     const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
 
     if (!existingAdmin) {
@@ -25,7 +25,7 @@ async function main() {
     }
 
     // Create Sample Employee
-    const employeeEmail = 'employee@technexthrms.com';
+    const employeeEmail = 'employee@technnexthrms.com';
     const existingEmployee = await prisma.user.findUnique({ where: { email: employeeEmail } });
 
     if (!existingEmployee) {

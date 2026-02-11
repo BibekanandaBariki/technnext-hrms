@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Need to implement Select
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Simplified Select for now if component not built, or build it. 
@@ -36,8 +35,6 @@ export default function ApplyLeavePage() {
     const {
         register,
         handleSubmit,
-        setValue,
-        watch,
         formState: { errors },
     } = useForm<LeaveFormValues>({
         resolver: zodResolver(leaveSchema),
@@ -51,7 +48,7 @@ export default function ApplyLeavePage() {
             router.push("/leaves")
         } catch (error: any) {
             console.error(error)
-            const message = error.response?.data?.message || "Failed to submit leave application"
+            const message = error?.response?.data?.message || "Failed to submit leave application"
             toast.error(message)
         } finally {
             setIsLoading(false)

@@ -14,13 +14,13 @@ export class LeavesController {
     constructor(private readonly leavesService: LeavesService) { }
 
     @Post()
-    apply(@GetUser() user: User, @Body() dto: ApplyLeaveDto) {
-        return this.leavesService.applyLeave(user.id, dto);
+    apply(@GetUser() user: any, @Body() dto: ApplyLeaveDto) {
+        return this.leavesService.applyLeave(user.id as string, dto);
     }
 
     @Get()
-    findAll(@GetUser() user: User) {
-        return this.leavesService.findAll(user.id); // For employee to see own leaves
+    findAll(@GetUser() user: any) {
+        return this.leavesService.findAll(user.id as string); // For employee to see own leaves
     }
 
     @Get('pending')
@@ -31,13 +31,13 @@ export class LeavesController {
 
     @Patch(':id/approve')
     @Roles(Role.HR, Role.MANAGER, Role.ADMIN)
-    approve(@Param('id') id: string, @GetUser() user: User) {
-        return this.leavesService.updateStatus(id, LeaveStatus.APPROVED, user.id);
+    approve(@Param('id') id: string, @GetUser() user: any) {
+        return this.leavesService.updateStatus(id, LeaveStatus.APPROVED, user.id as string);
     }
 
     @Patch(':id/reject')
     @Roles(Role.HR, Role.MANAGER, Role.ADMIN)
-    reject(@Param('id') id: string, @GetUser() user: User, @Body('reason') reason: string) {
-        return this.leavesService.updateStatus(id, LeaveStatus.REJECTED, user.id, reason);
+    reject(@Param('id') id: string, @GetUser() user: any, @Body('reason') reason: string) {
+        return this.leavesService.updateStatus(id, LeaveStatus.REJECTED, user.id as string, reason);
     }
 }

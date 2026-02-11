@@ -9,13 +9,13 @@ export class AttendanceService {
     constructor(private prisma: PrismaService) { }
 
     async punchIn(userId: string, dto: PunchInDto, ipAddress: string) {
-        const employee = await this.prisma.employee.findUnique({ where: { userId } });
+        const employee = await (this.prisma as any).employee.findUnique({ where: { userId } });
         if (!employee) throw new NotFoundException('Employee profile not found');
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const existing = await this.prisma.attendance.findFirst({
+        const existing = await (this.prisma as any).attendance.findFirst({
             where: {
                 employeeId: employee.id,
                 date: today,
@@ -62,13 +62,13 @@ export class AttendanceService {
     }
 
     async punchOut(userId: string, dto: PunchOutDto) {
-        const employee = await this.prisma.employee.findUnique({ where: { userId } });
+        const employee = await (this.prisma as any).employee.findUnique({ where: { userId } });
         if (!employee) throw new NotFoundException('Employee profile not found');
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const attendance = await this.prisma.attendance.findFirst({
+        const attendance = await (this.prisma as any).attendance.findFirst({
             where: {
                 employeeId: employee.id,
                 date: today,
@@ -109,13 +109,13 @@ export class AttendanceService {
     }
 
     async getTodayStatus(userId: string) {
-        const employee = await this.prisma.employee.findUnique({ where: { userId } });
+        const employee = await (this.prisma as any).employee.findUnique({ where: { userId } });
         if (!employee) throw new NotFoundException('Employee profile not found');
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        return this.prisma.attendance.findUnique({
+        return (this.prisma as any).attendance.findUnique({
             where: {
                 employeeId_date: {
                     employeeId: employee.id,
@@ -126,10 +126,10 @@ export class AttendanceService {
     }
 
     async findAll(userId: string) { // For employee view
-        const employee = await this.prisma.employee.findUnique({ where: { userId } });
+        const employee = await (this.prisma as any).employee.findUnique({ where: { userId } });
         if (!employee) throw new NotFoundException('Employee profile not found');
 
-        return this.prisma.attendance.findMany({
+        return (this.prisma as any).attendance.findMany({
             where: { employeeId: employee.id },
             orderBy: { date: 'desc' },
             take: 30 // Last 30 days

@@ -1,10 +1,11 @@
 import { IsNotEmpty, IsEnum, IsDateString, IsString, IsNumber } from 'class-validator';
-import { LeaveType } from '@prisma/client';
+// import { LeaveType } from '@prisma/client';
 
 export class ApplyLeaveDto {
     @IsNotEmpty()
-    @IsEnum(LeaveType)
-    leaveType: LeaveType;
+    @IsNotEmpty()
+    @IsEnum(['SICK_LEAVE', 'CASUAL_LEAVE', 'PAID_LEAVE', 'MATERNITY_LEAVE', 'PATERNITY_LEAVE', 'UNPAID_LEAVE'])
+    leaveType: string;
 
     @IsNotEmpty()
     @IsDateString()

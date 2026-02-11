@@ -13,23 +13,23 @@ export class AttendanceController {
     constructor(private readonly attendanceService: AttendanceService) { }
 
     @Post('punch-in')
-    punchIn(@GetUser() user: User, @Body() dto: PunchInDto, @Ip() ip: string) {
+    punchIn(@GetUser() user: any, @Body() dto: PunchInDto, @Ip() ip: string) {
         // In production, get IP from request headers (x-forwarded-for) if behind proxy
-        return this.attendanceService.punchIn(user.id, dto, ip);
+        return this.attendanceService.punchIn(user.id as string, dto, ip);
     }
 
     @Post('punch-out')
-    punchOut(@GetUser() user: User, @Body() dto: PunchOutDto) {
-        return this.attendanceService.punchOut(user.id, dto);
+    punchOut(@GetUser() user: any, @Body() dto: PunchOutDto) {
+        return this.attendanceService.punchOut(user.id as string, dto);
     }
 
     @Get('today')
-    getToday(@GetUser() user: User) {
-        return this.attendanceService.getTodayStatus(user.id);
+    getToday(@GetUser() user: any) {
+        return this.attendanceService.getTodayStatus(user.id as string);
     }
 
     @Get('my-attendance')
-    getMyAttendance(@GetUser() user: User) {
-        return this.attendanceService.findAll(user.id);
+    getMyAttendance(@GetUser() user: any) {
+        return this.attendanceService.findAll(user.id as string);
     }
 }

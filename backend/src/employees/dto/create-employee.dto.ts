@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString, IsOptional, IsEnum, IsDateString } from 'class-validator';
-import { Gender, EmploymentType } from '@prisma/client';
+// import { Gender, EmploymentType } from '@prisma/client';
 
 export class CreateEmployeeDto {
     @IsNotEmpty()
@@ -27,8 +27,8 @@ export class CreateEmployeeDto {
     designationId?: string;
 
     @IsOptional()
-    @IsEnum(EmploymentType)
-    employmentType?: EmploymentType;
+    @IsEnum(['PERMANENT', 'CONTRACT', 'INTERN']) // Hardcoded to avoid import error
+    employmentType?: 'PERMANENT' | 'CONTRACT' | 'INTERN';
 
     @IsOptional()
     @IsString()

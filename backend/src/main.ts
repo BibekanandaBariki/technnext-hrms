@@ -32,8 +32,8 @@ async function bootstrap() {
 
   // Swagger Setup
   const config = new DocumentBuilder()
-    .setTitle('TechNext HRMS API')
-    .setDescription('The TechNext HRMS API description')
+    .setTitle('Technnext HRMS API')
+    .setDescription('Employee Management System API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

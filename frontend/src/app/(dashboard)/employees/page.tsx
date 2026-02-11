@@ -16,8 +16,18 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
+interface Employee {
+    id: string
+    employeeCode: string
+    firstName: string
+    lastName: string
+    email: string
+    department?: { name: string }
+    status: string
+}
+
 export default function EmployeesPage() {
-    const [employees, setEmployees] = useState<any[]>([])
+    const [employees, setEmployees] = useState<Employee[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {

@@ -105,7 +105,7 @@ export default function AddEmployeePage() {
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="john.doe@technext.com"
+                                placeholder="john.doe@technnext.com"
                                 disabled={isLoading}
                                 {...register("email")}
                             />
