@@ -8,6 +8,12 @@ import { GetUser } from '../auth/decorators/get-user.decorator';
 import { Role } from '@prisma/client';
 import type { User } from '@prisma/client';
 
+interface RequestUser {
+    id: string
+    email: string
+    role: string
+}
+
 @Controller('payroll')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PayrollController {
@@ -18,9 +24,9 @@ export class PayrollController {
     setSalaryStructure(
         @Param('employeeId') employeeId: string,
         @Body() dto: CreateSalaryStructureDto,
-        @GetUser() user: any
+        @GetUser() user: RequestUser
     ) {
-        return this.payrollService.createOrUpdateSalaryStructure(employeeId, dto, user.id as string);
+        return this.payrollService.createOrUpdateSalaryStructure(employeeId, dto, user.id);
     }
 
     @Get('salary-structure/:employeeId')
@@ -34,13 +40,13 @@ export class PayrollController {
     processPayroll(
         @Query('year') year: number,
         @Query('month') month: number,
-        @GetUser() user: any
+        @GetUser() user: RequestUser
     ) {
-        return this.payrollService.processPayrollForMonth(Number(year), Number(month), user.id as string);
+        return this.payrollService.processPayrollForMonth(Number(year), Number(month), user.id);
     }
 
     @Get('payslips')
-    getMyPayslips(@GetUser() user: any) {
-        return this.payrollService.getMyPayslips(user.id as string);
+    getMyPayslips(@GetUser() user: RequestUser) {
+        return this.payrollService.getMyPayslips(user.id);
     }
 }

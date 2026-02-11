@@ -69,7 +69,7 @@ export default function AttendancePage() {
             await api.post(endpoint, body)
             toast.success(`Punch ${type.toUpperCase()} successful`)
             fetchData() // Refresh
-        } catch (error) {
+        } catch (error: unknown) {
             console.error(error)
             const msg = (error as any)?.response?.data?.message || "Action failed"
             toast.error(msg)

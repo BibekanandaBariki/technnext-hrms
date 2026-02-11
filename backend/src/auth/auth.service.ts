@@ -16,7 +16,7 @@ export class AuthService {
 
     async validateUser(email: string, pass: string): Promise<any> {
         const user = await this.usersService.findOne(email);
-        if (user && (await bcrypt.compare(pass, user.passwordHash))) {
+        if (user && (await bcrypt.compare(pass, user.passwordHash as string))) {
             const { passwordHash, ...result } = user;
             return result;
         }
@@ -48,7 +48,7 @@ export class AuthService {
         const user = await this.usersService.create({
             email: registerDto.email,
             passwordHash: registerDto.password,
-            role: registerDto.role,
+            role: registerDto.role as any, // Cast to any or Role to bypass mismatch with string DTO
             isActive: true,
         }); // Password hashing handled in UsersService
 

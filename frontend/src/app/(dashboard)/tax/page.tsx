@@ -50,7 +50,7 @@ export default function TaxPage() {
             await api.post('/tax/declare', formData)
             toast.success("Tax declaration saved")
             fetchDeclarations()
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error)
             toast.error("Failed to save declaration")
         }

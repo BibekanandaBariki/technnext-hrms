@@ -24,7 +24,7 @@ export class UsersService {
         // Changing to use prompt requirement if possible, or config.
         // But here I'll just use bcrypt directly.
         // Let's check prompt requirement: "bcrypt (cost factor: 12)"
-        const hashedPassword = await bcrypt.hash(data.passwordHash, 12);
+        const hashedPassword = await bcrypt.hash(data.passwordHash as string, 12);
 
         return this.prisma.user.create({
             data: {

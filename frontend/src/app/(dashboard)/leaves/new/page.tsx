@@ -46,7 +46,7 @@ export default function ApplyLeavePage() {
             await api.post("/leaves", data)
             toast.success("Leave application submitted")
             router.push("/leaves")
-        } catch (error) {
+        } catch (error: unknown) {
             console.error(error)
             const message = (error as any)?.response?.data?.message || "Failed to submit leave application"
             toast.error(message)

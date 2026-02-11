@@ -4,8 +4,13 @@ import { useEffect, useState } from "react"
 import { Bell, User } from "lucide-react" // Import User explicitly to avoid conflict with type
 import { Button } from "@/components/ui/button"
 
+interface User {
+    email: string
+    role: string
+}
+
 export function Header() {
-    const [user, setUser] = useState<any>(null)
+    const [user, setUser] = useState<User | null>(null)
 
     useEffect(() => {
         if (typeof window !== 'undefined') {

@@ -57,7 +57,7 @@ export default function PerformancePage() {
             setShowForm(false)
             setNewGoal({ title: '', description: '', quarter: 1, year: new Date().getFullYear(), targetDate: '' })
             fetchGoals()
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error)
             toast.error("Failed to create goal")
         }
