@@ -14,18 +14,18 @@ export class PerformanceController {
     constructor(private readonly performanceService: PerformanceService) { }
 
     @Post('goals')
-    createGoal(@GetUser() user: User, @Body() dto: CreateGoalDto) {
-        return this.performanceService.createGoal(user.id, dto);
+    createGoal(@GetUser() user: any, @Body() dto: CreateGoalDto) {
+        return this.performanceService.createGoal(user.id as string, dto);
     }
 
     @Get('goals')
-    getMyGoals(@GetUser() user: User) {
-        return this.performanceService.findAllGoals(user.id);
+    getMyGoals(@GetUser() user: any) {
+        return this.performanceService.findAllGoals(user.id as string);
     }
 
     @Get('goals/team')
     @Roles(Role.MANAGER, Role.ADMIN)
-    getTeamGoals(@GetUser() user: User) {
-        return this.performanceService.getTeamGoals(user.id);
+    getTeamGoals(@GetUser() user: any) {
+        return this.performanceService.getTeamGoals(user.id as string);
     }
 }

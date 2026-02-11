@@ -44,9 +44,9 @@ export default function AddEmployeePage() {
             await api.post("/employees", data)
             toast.success("Employee created successfully")
             router.push("/employees")
-        } catch (error: any) {
+        } catch (error) {
             console.error(error)
-            const message = error.response?.data?.message || "Failed to create employee"
+            const message = (error as any)?.response?.data?.message || "Failed to create employee"
             toast.error(message)
         } finally {
             setIsLoading(false)

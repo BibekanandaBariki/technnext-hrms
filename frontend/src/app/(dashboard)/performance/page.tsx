@@ -10,15 +10,25 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog" // Need to build Dialog
+// import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog" // Need to build Dialog
 import { Badge } from "@/components/ui/badge"
 
 // Simplified Dialog implementation or use logic to just toggle a form
 // For speed, let's use a simple toggle form or separate page. 
 // A simple toggle form on top is fine for MVP.
 
+interface Goal {
+    id: string
+    title: string
+    description: string
+    quarter: number
+    year: number
+    targetDate: string
+    status: string
+}
+
 export default function PerformancePage() {
-    const [goals, setGoals] = useState<any[]>([])
+    const [goals, setGoals] = useState<Goal[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const [newGoal, setNewGoal] = useState({ title: '', description: '', quarter: 1, year: new Date().getFullYear(), targetDate: '' })

@@ -18,9 +18,9 @@ export class PayrollController {
     setSalaryStructure(
         @Param('employeeId') employeeId: string,
         @Body() dto: CreateSalaryStructureDto,
-        @GetUser() user: User
+        @GetUser() user: any
     ) {
-        return this.payrollService.createOrUpdateSalaryStructure(employeeId, dto, user.id);
+        return this.payrollService.createOrUpdateSalaryStructure(employeeId, dto, user.id as string);
     }
 
     @Get('salary-structure/:employeeId')
@@ -34,13 +34,13 @@ export class PayrollController {
     processPayroll(
         @Query('year') year: number,
         @Query('month') month: number,
-        @GetUser() user: User
+        @GetUser() user: any
     ) {
-        return this.payrollService.processPayrollForMonth(Number(year), Number(month), user.id);
+        return this.payrollService.processPayrollForMonth(Number(year), Number(month), user.id as string);
     }
 
     @Get('payslips')
-    getMyPayslips(@GetUser() user: User) {
-        return this.payrollService.getMyPayslips(user.id);
+    getMyPayslips(@GetUser() user: any) {
+        return this.payrollService.getMyPayslips(user.id as string);
     }
 }

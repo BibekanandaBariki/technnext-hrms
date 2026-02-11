@@ -7,8 +7,9 @@ export class DeclareTaxDto {
     financialYear: string;
 
     @IsNotEmpty()
-    @IsEnum(TaxRegime)
-    regime: TaxRegime;
+    @IsNotEmpty()
+    @IsEnum(['OLD_REGIME', 'NEW_REGIME'])
+    regime: string;
 
     @IsNotEmpty()
     @IsNumber()

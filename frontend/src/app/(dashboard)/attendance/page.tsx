@@ -18,9 +18,25 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
+interface AttendanceStatus {
+    punchIn: string | null
+    punchOut: string | null
+    workHours: number
+    ipAddress: string
+}
+
+interface AttendanceRecord {
+    id: string
+    date: string
+    punchIn: string | null
+    punchOut: string | null
+    workHours: number
+    attendanceType: string
+}
+
 export default function AttendancePage() {
-    const [status, setStatus] = useState<any>(null)
-    const [history, setHistory] = useState<any[]>([])
+    const [status, setStatus] = useState<AttendanceStatus | null>(null)
+    const [history, setHistory] = useState<AttendanceRecord[]>([])
     const [loading, setLoading] = useState(true)
     const [actionLoading, setActionLoading] = useState(false)
 
@@ -53,9 +69,9 @@ export default function AttendancePage() {
             await api.post(endpoint, body)
             toast.success(`Punch ${type.toUpperCase()} successful`)
             fetchData() // Refresh
-        } catch (error: any) {
+        } catch (error) {
             console.error(error)
-            const msg = error?.response?.data?.message || "Action failed"
+            const msg = (error as any)?.response?.data?.message || "Action failed"
             toast.error(msg)
         } finally {
             setActionLoading(false)

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, UserCheck, CalendarDays, Receipt, BarChart3, FileText, Settings, LogOut } from "lucide-react"
+import { LayoutDashboard, Users, UserCheck, CalendarDays, Receipt, BarChart3, FileText, LogOut } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"

@@ -17,8 +17,18 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 
+interface Leave {
+    id: string
+    leaveType: string
+    startDate: string
+    endDate: string
+    totalDays: number
+    reason: string
+    status: string
+}
+
 export default function LeavesPage() {
-    const [leaves, setLeaves] = useState<any[]>([])
+    const [leaves, setLeaves] = useState<Leave[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {

@@ -56,9 +56,9 @@ export default function LoginPage() {
                 router.push("/dashboard") // For now, everyone to dashboard
             }
 
-        } catch (error: any) {
+        } catch (error) {
             console.error(error)
-            const message = error?.response?.data?.message || "Invalid credentials"
+            const message = (error as any)?.response?.data?.message || "Invalid credentials"
             toast.error(message)
         } finally {
             setIsLoading(false)

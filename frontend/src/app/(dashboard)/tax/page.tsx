@@ -6,13 +6,21 @@ import { Save } from "lucide-react"
 
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 
+interface Declaration {
+    id: string
+    financialYear: string
+    regime: string
+    section80C: number
+    status: string
+}
+
 export default function TaxPage() {
-    const [declarations, setDeclarations] = useState<any[]>([])
+    const [declarations, setDeclarations] = useState<Declaration[]>([])
     const [loading, setLoading] = useState(true)
     const [formData, setFormData] = useState({
         financialYear: '2023-2024',

@@ -11,6 +11,7 @@ export class RegisterDto {
     password: string;
 
     @IsOptional()
-    @IsEnum(Role)
-    role?: Role;
+    @IsOptional()
+    @IsEnum(['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'])
+    role?: string;
 }
