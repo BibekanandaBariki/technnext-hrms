@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: technext_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-technext_hrms}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - hrms-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: technext_redis
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - hrms-network
+
+  # Backend and Frontend services will be added here for production/docker deployment
+  # For local development, we run them on host machine
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  hrms-network:
+    driver: bridge
