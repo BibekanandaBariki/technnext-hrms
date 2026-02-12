@@ -26,6 +26,12 @@ export class EmployeesController {
     return this.employeesService.create(createEmployeeDto);
   }
 
+  @Post(':id/resend-onboarding-email')
+  @Roles(Role.HR, Role.ADMIN)
+  resendOnboardingEmail(@Param('id') id: string) {
+    return this.employeesService.resendOnboardingEmail(id);
+  }
+
   @Get()
   @Roles(Role.HR, Role.ADMIN, Role.MANAGER)
   findAll() {

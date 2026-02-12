@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Plus, RefreshCw, CheckCircle, XCircle, Mail } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,12 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface Employee {
     id: string
@@ -24,11 +30,13 @@ interface Employee {
     email: string
     department?: { name: string }
     status: string
+    onboardingEmailSent?: boolean
 }
 
 export default function EmployeesPage() {
     const [employees, setEmployees] = useState<Employee[]>([])
     const [loading, setLoading] = useState(true)
+    const [resendingId, setResendingId] = useState<string | null>(null)
 
     useEffect(() => {
         fetchEmployees()
@@ -44,6 +52,23 @@ export default function EmployeesPage() {
             toast.error("Failed to fetch employees")
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleResendEmail = async (id: string, email: string) => {
+        setResendingId(id)
+        try {
+            await api.post(`/employees/${id}/resend-onboarding-email`)
+            toast.success(`Onboarding email resent to ${email}`)
+            // Update local state
+            setEmployees(prev => prev.map(emp =>
+                emp.id === id ? { ...emp, onboardingEmailSent: true } : emp
+            ))
+        } catch (error) {
+            console.error(error)
+            toast.error("Failed to resend email")
+        } finally {
+            setResendingId(null)
         }
     }
 
@@ -72,17 +97,18 @@ export default function EmployeesPage() {
                                 <TableHead>Email</TableHead>
                                 <TableHead>Department</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead>Email Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center">Loading...</TableCell>
+                                    <TableCell colSpan={7} className="text-center">Loading...</TableCell>
                                 </TableRow>
                             ) : employees.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center">No employees found.</TableCell>
+                                    <TableCell colSpan={7} className="text-center">No employees found.</TableCell>
                                 </TableRow>
                             ) : (
                                 employees.map((emp) => (
@@ -92,7 +118,45 @@ export default function EmployeesPage() {
                                         <TableCell>{emp.email}</TableCell>
                                         <TableCell>{emp.department?.name || '-'}</TableCell>
                                         <TableCell>{emp.status}</TableCell>
-                                        <TableCell className="text-right space-x-2">
+                                        <TableCell>
+                                            {emp.onboardingEmailSent ? (
+                                                <div className="flex items-center text-green-600">
+                                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                                    <span className="text-xs">Sent</span>
+                                                </div>
+                                            ) : (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className="flex items-center text-red-500 cursor-help">
+                                                                <XCircle className="h-4 w-4 mr-1" />
+                                                                <span className="text-xs">Failed</span>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Email delivery failed. Click resend icon.</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right flex justify-end items-center space-x-2">
+                                            {!emp.onboardingEmailSent && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-blue-600"
+                                                    disabled={resendingId === emp.id}
+                                                    onClick={() => handleResendEmail(emp.id, emp.email)}
+                                                    title="Resend Onboarding Email"
+                                                >
+                                                    {resendingId === emp.id ? (
+                                                        <RefreshCw className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <Mail className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            )}
                                             <Link href={`/employees/${emp.id}`} className="text-sm font-medium text-blue-600 hover:underline">
                                                 View
                                             </Link>

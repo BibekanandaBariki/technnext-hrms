@@ -198,6 +198,7 @@ model Employee {
   employmentType      EmploymentType @default(FULL_TIME)
   
   status              EmployeeStatus @default(ONBOARDING)
+  onboardingEmailSent Boolean        @default(false)
   probationEndDate    DateTime?
   
   emergencyContactName   String?

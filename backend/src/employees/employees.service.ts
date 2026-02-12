@@ -91,6 +91,12 @@ export class EmployeesService {
         password,
         loginLink,
       );
+
+      // Update status to true
+      await this.prisma.employee.update({
+        where: { id: result.employee.id },
+        data: { onboardingEmailSent: true },
+      });
     } catch (emailError: unknown) {
       // Email failure should not rollback employee creation
       const error = emailError as Error;
@@ -98,6 +104,56 @@ export class EmployeesService {
     }
 
     return result.employee;
+  }
+
+  async resendOnboardingEmail(id: string) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id },
+      include: { user: true },
+    });
+
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
+    }
+
+    if (!employee.user) {
+      throw new ConflictException('Employee has no associated user account');
+    }
+
+    // Generate NEW temporary password because we cannot recover the old one
+    const password = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update User with new password
+    await this.prisma.user.update({
+      where: { id: employee.userId },
+      data: { passwordHash: hashedPassword },
+    });
+
+    const loginLink = process.env.FRONTEND_URL || 'http://localhost:3000/login';
+
+    try {
+      await this.emailService.sendOnboardingEmail(
+        employee.email,
+        `${employee.firstName} ${employee.lastName}`,
+        password,
+        loginLink,
+      );
+
+      // Update status to true
+      await this.prisma.employee.update({
+        where: { id: employee.id },
+        data: { onboardingEmailSent: true },
+      });
+
+      return {
+        message: 'Email passed to delivery service',
+        email: employee.email,
+      };
+    } catch (error) {
+      console.error('Failed to resend onboarding email:', error);
+      throw new Error(`Failed to send email: ${(error as Error).message}`);
+    }
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
