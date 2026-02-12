@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Patch } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -24,9 +25,14 @@ export class EmployeesController {
     }
 
     @Get(':id')
-    // Allow employee to view only their own profile? Handled by service logic usually or separate endpoint 'me'
-    // For now, standard CRUD
+    @Roles(Role.HR, Role.ADMIN, Role.MANAGER)
     findOne(@Param('id') id: string) {
         return this.employeesService.findOne(id);
+    }
+
+    @Patch(':id')
+    @Roles(Role.HR, Role.ADMIN)
+    update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto) {
+        return this.employeesService.update(id, updateEmployeeDto);
     }
 }

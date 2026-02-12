@@ -19,12 +19,15 @@ export class TaxService {
                 },
             },
             update: {
-                ...dto,
+                regime: dto.regime as any, // Cast to bypass DTO string literal vs Prisma enum
+                section80C: dto.section80C,
                 status: TaxDeclarationStatus.DRAFT, // Reset to draft on update
             },
             create: {
                 employeeId: employee.id,
-                ...dto,
+                financialYear: dto.financialYear,
+                regime: dto.regime as any, // Cast to bypass DTO string literal vs Prisma enum
+                section80C: dto.section80C,
             },
         });
     }

@@ -27,8 +27,9 @@ export class CreateEmployeeDto {
     designationId?: string;
 
     @IsOptional()
-    @IsEnum(['PERMANENT', 'CONTRACT', 'INTERN']) // Hardcoded to avoid import error
-    employmentType?: 'PERMANENT' | 'CONTRACT' | 'INTERN';
+    @IsOptional()
+    @IsEnum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN'])
+    employmentType?: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN';
 
     @IsOptional()
     @IsString()

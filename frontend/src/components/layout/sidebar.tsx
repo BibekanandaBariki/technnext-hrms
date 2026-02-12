@@ -54,8 +54,9 @@ export function Sidebar() {
         <div className="flex h-full flex-col border-r bg-card">
             <div className="flex h-14 items-center border-b px-6">
                 <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-                    <LayoutDashboard className="h-6 w-6" />
-                    <span>Technnext HRMS</span>
+                    {/* <LayoutDashboard className="h-6 w-6" /> */}
+                    {/* <span>Technnext HRMS</span> */}
+                    <img src="/logo.png" alt="Technnext HRMS" className="h-10 w-auto" />
                 </Link>
             </div>
             <div className="flex-1 overflow-auto py-4">

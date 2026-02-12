@@ -34,6 +34,14 @@ interface AttendanceRecord {
     attendanceType: string
 }
 
+interface ApiError {
+    response?: {
+        data?: {
+            message?: string
+        }
+    }
+}
+
 export default function AttendancePage() {
     const [status, setStatus] = useState<AttendanceStatus | null>(null)
     const [history, setHistory] = useState<AttendanceRecord[]>([])
@@ -69,9 +77,11 @@ export default function AttendancePage() {
             await api.post(endpoint, body)
             toast.success(`Punch ${type.toUpperCase()} successful`)
             fetchData() // Refresh
+            // ... inside component
         } catch (error: unknown) {
             console.error(error)
-            const msg = (error as any)?.response?.data?.message || "Action failed"
+            const err = error as ApiError
+            const msg = err.response?.data?.message || "Action failed"
             toast.error(msg)
         } finally {
             setActionLoading(false)

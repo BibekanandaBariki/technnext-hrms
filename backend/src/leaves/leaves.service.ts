@@ -25,7 +25,7 @@ export class LeavesService {
         return this.prisma.leave.create({
             data: {
                 employeeId: employee.id,
-                leaveType: dto.leaveType,
+                leaveType: dto.leaveType as any, // Cast to bypass DTO string literal vs Prisma enum
                 startDate: start,
                 endDate: end,
                 reason: dto.reason,

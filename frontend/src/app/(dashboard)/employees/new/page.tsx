@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -14,29 +14,68 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 const employeeSchema = z.object({
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Invalid email address"),
     joiningDate: z.string().min(1, "Joining date is required"),
-    // departmentId: z.string().optional(),
-    // designationId: z.string().optional(),
+    departmentId: z.string().min(1, "Department is required"),
+    designationId: z.string().min(1, "Designation is required"),
+    employmentType: z.enum(["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"]).optional(),
 })
 
 type EmployeeFormValues = z.infer<typeof employeeSchema>
 
+interface ApiError {
+    response?: {
+        data?: {
+            message?: string
+        }
+    }
+}
+
 export default function AddEmployeePage() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
+    const [departments, setDepartments] = useState<any[]>([])
+    const [designations, setDesignations] = useState<any[]>([])
 
     const {
         register,
         handleSubmit,
         formState: { errors },
+        setValue,
     } = useForm<EmployeeFormValues>({
         resolver: zodResolver(employeeSchema),
+        defaultValues: {
+            employmentType: "FULL_TIME",
+        }
     })
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [deptRes, desigRes] = await Promise.all([
+                    api.get("/departments"),
+                    api.get("/designations")
+                ])
+                setDepartments(deptRes.data.data || [])
+                setDesignations(desigRes.data.data || [])
+            } catch (error) {
+                console.error("Failed to fetch options", error)
+                toast.error("Failed to load departments/designations")
+            }
+        }
+        fetchData()
+    }, [])
 
     async function onSubmit(data: EmployeeFormValues) {
         setIsLoading(true)
@@ -46,7 +85,8 @@ export default function AddEmployeePage() {
             router.push("/employees")
         } catch (error: unknown) {
             console.error(error)
-            const message = (error as any)?.response?.data?.message || "Failed to create employee"
+            const err = error as ApiError
+            const message = err.response?.data?.message || "Failed to create employee"
             toast.error(message)
         } finally {
             setIsLoading(false)
@@ -114,17 +154,73 @@ export default function AddEmployeePage() {
                             )}
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="joiningDate">Joining Date</Label>
-                            <Input
-                                id="joiningDate"
-                                type="date"
-                                disabled={isLoading}
-                                {...register("joiningDate")}
-                            />
-                            {errors.joiningDate && (
-                                <p className="text-sm text-red-500">{errors.joiningDate.message}</p>
-                            )}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="departmentId">Department</Label>
+                                <Select onValueChange={(val) => setValue("departmentId", val)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Department" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {departments.map((dept) => (
+                                            <SelectItem key={dept.id} value={dept.id}>
+                                                {dept.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.departmentId && (
+                                    <p className="text-sm text-red-500">{errors.departmentId.message}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="designationId">Designation</Label>
+                                <Select onValueChange={(val) => setValue("designationId", val)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Designation" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {designations.map((desig) => (
+                                            <SelectItem key={desig.id} value={desig.id}>
+                                                {desig.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.designationId && (
+                                    <p className="text-sm text-red-500">{errors.designationId.message}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="joiningDate">Joining Date</Label>
+                                <Input
+                                    id="joiningDate"
+                                    type="date"
+                                    disabled={isLoading}
+                                    {...register("joiningDate")}
+                                />
+                                {errors.joiningDate && (
+                                    <p className="text-sm text-red-500">{errors.joiningDate.message}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="employmentType">Employment Type</Label>
+                                <Select onValueChange={(val) => setValue("employmentType", val as any)} defaultValue="FULL_TIME">
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="FULL_TIME">Full Time</SelectItem>
+                                        <SelectItem value="PART_TIME">Part Time</SelectItem>
+                                        <SelectItem value="CONTRACT">Contract</SelectItem>
+                                        <SelectItem value="INTERN">Intern</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         <div className="flex justify-end gap-4 pt-4">

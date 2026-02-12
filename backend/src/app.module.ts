@@ -10,6 +10,8 @@ import { PayrollModule } from './payroll/payroll.module';
 import { PerformanceModule } from './performance/performance.module';
 import { TaxModule } from './tax/tax.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { DepartmentsModule } from './departments/departments.module';
+import { DesignationsModule } from './designations/designations.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -27,7 +29,11 @@ import { AppService } from './app.service';
     PayrollModule,
     PerformanceModule,
     TaxModule,
+    PerformanceModule,
+    TaxModule,
     DashboardModule,
+    DepartmentsModule,
+    DesignationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

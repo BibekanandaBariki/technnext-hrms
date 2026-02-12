@@ -37,6 +37,9 @@ export default function DashboardPage() {
                 } else {
                     setLoading(false) // No specific stats for employee yet in this view
                 }
+            } else {
+                // Redirect to login if not authenticated
+                window.location.href = '/login';
             }
         }
     }, [])

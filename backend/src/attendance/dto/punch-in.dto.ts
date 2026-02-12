@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsLatitude, IsLongitude } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class PunchInDto {
     @IsOptional()

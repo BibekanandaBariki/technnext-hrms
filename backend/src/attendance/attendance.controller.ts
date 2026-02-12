@@ -5,7 +5,7 @@ import { PunchOutDto } from './dto/punch-out.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
-import type { User } from '@prisma/client';
+// import type { User } from '@prisma/client';
 
 interface RequestUser {
     id: string

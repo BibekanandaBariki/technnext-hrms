@@ -28,6 +28,15 @@ const leaveSchema = z.object({
 
 type LeaveFormValues = z.infer<typeof leaveSchema>
 
+// ... types defined above component
+interface ApiError {
+    response?: {
+        data?: {
+            message?: string
+        }
+    }
+}
+
 export default function ApplyLeavePage() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
@@ -46,9 +55,12 @@ export default function ApplyLeavePage() {
             await api.post("/leaves", data)
             toast.success("Leave application submitted")
             router.push("/leaves")
+
+            // ... inside component
         } catch (error: unknown) {
             console.error(error)
-            const message = (error as any)?.response?.data?.message || "Failed to submit leave application"
+            const err = error as ApiError
+            const message = err.response?.data?.message || "Failed to submit leave application"
             toast.error(message)
         } finally {
             setIsLoading(false)

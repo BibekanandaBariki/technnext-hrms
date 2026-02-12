@@ -92,9 +92,12 @@ export default function EmployeesPage() {
                                         <TableCell>{emp.email}</TableCell>
                                         <TableCell>{emp.department?.name || '-'}</TableCell>
                                         <TableCell>{emp.status}</TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right space-x-2">
                                             <Link href={`/employees/${emp.id}`} className="text-sm font-medium text-blue-600 hover:underline">
                                                 View
+                                            </Link>
+                                            <Link href={`/employees/${emp.id}/edit`} className="text-sm font-medium text-green-600 hover:underline">
+                                                Edit
                                             </Link>
                                         </TableCell>
                                     </TableRow>

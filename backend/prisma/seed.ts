@@ -1,7 +1,15 @@
 import { PrismaClient, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
+import * as dotenv from 'dotenv';
 
-const prisma = new PrismaClient();
+dotenv.config();
+
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
     console.log('Seeding database...');
@@ -22,6 +30,42 @@ async function main() {
         console.log(`Created admin user: ${admin.email}`);
     } else {
         console.log('Admin user already exists.');
+    }
+
+    // Ensure Admin has an Employee profile for testing "My" features
+    const adminUser = await prisma.user.findUnique({ where: { email: adminEmail } });
+    if (adminUser) {
+        const existingAdminEmployee = await prisma.employee.findUnique({ where: { userId: adminUser.id } });
+        if (!existingAdminEmployee) {
+            const adminDept = await prisma.department.upsert({
+                where: { name: 'Management' },
+                update: {},
+                create: { name: 'Management', description: 'Executive Management' }
+            });
+
+            const adminDesig = await prisma.designation.upsert({
+                where: { name: 'Administrator' },
+                update: {},
+                create: { name: 'Administrator', description: 'System Administrator' }
+            });
+
+            await prisma.employee.create({
+                data: {
+                    userId: adminUser.id,
+                    firstName: 'Admin',
+                    lastName: 'User',
+                    email: adminEmail,
+                    joiningDate: new Date(),
+                    status: 'ACTIVE',
+                    employeeCode: 'ADM-001',
+                    departmentId: adminDept.id,
+                    designationId: adminDesig.id
+                }
+            });
+            console.log(`Created employee profile for admin: ${adminUser.email}`);
+        } else {
+            console.log('Admin employee profile already exists.');
+        }
     }
 
     // Create Sample Employee
@@ -66,4 +110,5 @@ main()
     })
     .finally(async () => {
         await prisma.$disconnect();
+        await pool.end();
     });
