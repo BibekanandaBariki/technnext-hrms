@@ -22,14 +22,65 @@ async function main() {
     ];
 
     console.log(`Cleaning up ${emailsToDelete.length} users...`);
-    await prisma.user.deleteMany({
-        where: {
-            email: {
-                in: emailsToDelete
-            }
-        }
+
+    // 1. Find users to delete
+    const usersToDelete = await prisma.user.findMany({
+        where: { email: { in: emailsToDelete } },
+        select: { id: true }
     });
-    console.log('Cleanup completed.');
+
+    const userIds = usersToDelete.map(u => u.id);
+
+    if (userIds.length > 0) {
+        console.log(`Found ${userIds.length} users to delete. Cleaning up related records...`);
+
+        // 2. Delete related Employee records (and their dependencies if cascading isn't set)
+        // Note: In a real prod env, we might want to soft-delete, but for this cleanup request we hard delete.
+
+        // Find employee IDs to clean up their related data first
+        const employeesToDelete = await prisma.employee.findMany({
+            where: { userId: { in: userIds } },
+            select: { id: true }
+        });
+        const employeeIds = employeesToDelete.map(e => e.id);
+
+        if (employeeIds.length > 0) {
+            // Delete Attendance
+            await prisma.attendance.deleteMany({ where: { employeeId: { in: employeeIds } } });
+            // Delete Leaves
+            await prisma.leave.deleteMany({ where: { employeeId: { in: employeeIds } } });
+            // Delete LeaveBalance
+            await prisma.leaveBalance.deleteMany({ where: { employeeId: { in: employeeIds } } });
+            // Delete Payroll
+            await prisma.payrollRecord.deleteMany({ where: { employeeId: { in: employeeIds } } });
+            // Delete TaxDeclaration
+            await prisma.taxDeclaration.deleteMany({ where: { employeeId: { in: employeeIds } } });
+            // Delete Documents
+            await prisma.employeeDocument.deleteMany({ where: { employeeId: { in: employeeIds } } });
+            // Delete Goals
+            await prisma.goal.deleteMany({ where: { employeeId: { in: employeeIds } } });
+            // Delete Performance Reviews
+            await prisma.performanceReview.deleteMany({ where: { employeeId: { in: employeeIds } } });
+            // Delete SalaryStructure
+            await prisma.salaryStructure.deleteMany({ where: { employeeId: { in: employeeIds } } });
+
+            // Finally delete Employees
+            await prisma.employee.deleteMany({ where: { id: { in: employeeIds } } });
+        }
+
+        // 3. Delete AuditLogs and Sessions for these users
+        await prisma.auditLog.deleteMany({ where: { userId: { in: userIds } } });
+        await prisma.session.deleteMany({ where: { userId: { in: userIds } } });
+        await prisma.passwordHistory.deleteMany({ where: { userId: { in: userIds } } });
+
+        // 4. Finally delete Users
+        await prisma.user.deleteMany({
+            where: { id: { in: userIds } }
+        });
+        console.log('Cleanup completed successfully.');
+    } else {
+        console.log('No users found to cleanup.');
+    }
 
     // Create Admin User
     const adminEmail = 'admin@technnexthrms.com';
