@@ -14,6 +14,23 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
     console.log('Seeding database...');
 
+    // Cleanup specific users as requested
+    const emailsToDelete = [
+        'barikikanha709@gmail.com',
+        'barikikanha998@gmail.com',
+        'john.updated@technnexthrms.com'
+    ];
+
+    console.log(`Cleaning up ${emailsToDelete.length} users...`);
+    await prisma.user.deleteMany({
+        where: {
+            email: {
+                in: emailsToDelete
+            }
+        }
+    });
+    console.log('Cleanup completed.');
+
     // Create Admin User
     const adminEmail = 'admin@technnexthrms.com';
     const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
