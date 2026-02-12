@@ -117,6 +117,7 @@ export class AuthService {
 
         // Check if token matches any session
         for (const session of sessions) {
+            if (!session.refreshToken) continue;
             const isValid = await bcrypt.compare(token, session.refreshToken);
             if (isValid) {
                 return true;
@@ -126,7 +127,7 @@ export class AuthService {
         return false;
     }
 
-    async resetPassword(token: string, newPassword: string) {
+    async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
         // Find matching session
         const sessions = await this.prisma.session.findMany({
             where: {
@@ -142,6 +143,7 @@ export class AuthService {
 
         let matchedSession = null;
         for (const session of sessions) {
+            if (!session.refreshToken) continue;
             const isValid = await bcrypt.compare(token, session.refreshToken);
             if (isValid) {
                 matchedSession = session;

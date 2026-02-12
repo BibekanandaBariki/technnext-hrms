@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Request, Param, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Request, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -13,8 +13,8 @@ export class AuthController {
     constructor(private authService: AuthService) { }
 
     @Post('login')
-    async login(@Body() loginDto: LoginDto): Promise<{ access_token: string, user: any }> {
-        return this.authService.login(loginDto) as Promise<{ access_token: string, user: any }>;
+    async login(@Body() loginDto: LoginDto): Promise<{ access_token: string; user: Omit<User, 'passwordHash'> }> {
+        return this.authService.login(loginDto);
     }
 
     @Post('register')
@@ -34,12 +34,12 @@ export class AuthController {
     }
 
     @Post('reset-password')
-    async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
         return this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.newPassword);
     }
 
     @Get('validate-reset-token')
-    async validateResetToken(@Query('token') token: string) {
+    async validateResetToken(@Query('token') token: string): Promise<{ valid: boolean }> {
         const isValid = await this.authService.validateResetToken(token);
         return { valid: isValid };
     }

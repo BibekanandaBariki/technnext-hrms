@@ -77,8 +77,9 @@ export class EmployeesService {
                         password,
                         loginLink
                     );
-                } catch (emailError) {
-                    console.error('Failed to send onboarding email:', emailError);
+                } catch (emailError: unknown) {
+                    const error = emailError as Error;
+                    console.error('Failed to send onboarding email:', error.message);
                     // verified: do not fail transaction if email fails, but maybe we should?
                     // For now, log and proceed is safer for data consistency test.
                 }

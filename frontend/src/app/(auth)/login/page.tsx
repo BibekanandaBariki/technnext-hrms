@@ -7,14 +7,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { toast } from "sonner"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import Image from "next/image"
 import { Mail, Lock, ArrowRight } from "lucide-react"
 
 import api from "@/lib/api"
-import WebGLBackground from "@/components/auth/WebGLBackground"
-import AnimatedLogo from "@/components/auth/AnimatedLogo"
-import AuthCard from "@/components/auth/AuthCard"
-import { PremiumButton } from "@/components/ui/premium-button"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -25,7 +22,15 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>
 
-export default function PremiumLoginPage() {
+interface ApiError {
+    response?: {
+        data?: {
+            message?: string
+        }
+    }
+}
+
+export default function LoginPage() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
 
@@ -52,8 +57,9 @@ export default function PremiumLoginPage() {
 
             toast.success("Welcome back!")
             router.push("/dashboard")
-        } catch (error: any) {
-            const message = error.response?.data?.message || "Invalid credentials"
+        } catch (error) {
+            const err = error as ApiError
+            const message = err.response?.data?.message || "Invalid credentials"
             toast.error(message)
         } finally {
             setIsLoading(false)
@@ -61,52 +67,63 @@ export default function PremiumLoginPage() {
     }
 
     return (
-        <>
-            <WebGLBackground />
+        <div className="min-h-screen flex">
+            {/* Left Side - Branding */}
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 p-12 flex-col justify-between">
+                <div>
+                    <Image
+                        src="/technext-logo.png"
+                        alt="Technnext Logo"
+                        width={180}
+                        height={180}
+                        className="mb-8"
+                        priority
+                    />
+                    <h1 className="text-5xl font-bold text-white mb-6">
+                        Welcome to<br />Technnext HRMS
+                    </h1>
+                    <p className="text-xl text-white/90 max-w-md">
+                        Streamline your workforce management with our comprehensive HR solution.
+                    </p>
+                </div>
+                <div className="text-white/70 text-sm">
+                    © 2026 Technnext. All rights reserved.
+                </div>
+            </div>
 
-            <div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                    className="w-full max-w-[480px]"
-                >
-                    <AuthCard className="px-8 sm:px-12 py-12">
-                        {/* Logo */}
-                        <div className="flex justify-center -mt-4 mb-10">
-                            <AnimatedLogo size={110} />
+            {/* Right Side - Login Form */}
+            <div className="flex-1 flex items-center justify-center p-8 bg-gray-50">
+                <div className="w-full max-w-md">
+                    {/* Mobile Logo */}
+                    <div className="lg:hidden flex justify-center mb-8">
+                        <Image
+                            src="/technext-logo.png"
+                            alt="Technnext Logo"
+                            width={120}
+                            height={120}
+                            priority
+                        />
+                    </div>
+
+                    {/* Login Card */}
+                    <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-10">
+                        <div className="mb-8">
+                            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                                Sign In
+                            </h2>
+                            <p className="text-gray-600">
+                                Enter your credentials to access your account
+                            </p>
                         </div>
 
-                        {/* Header */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 1.2 }}
-                            className="text-center mb-10"
-                        >
-                            <h1 className="text-4xl sm:text-5xl font-bold mb-3 tracking-tight">
-                                <span className="bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text text-transparent">
-                                    Welcome Back
-                                </span>
-                            </h1>
-                            <p className="text-white/50 text-base font-light tracking-wide">
-                                Sign in to access your workspace
-                            </p>
-                        </motion.div>
-
-                        {/* Form */}
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                            <motion.div
-                                initial={{ opacity: 0, x: -30 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 1.3, duration: 0.6 }}
-                                className="space-y-2.5"
-                            >
-                                <Label htmlFor="email" className="text-white/70 text-sm font-medium tracking-wide">
+                            {/* Email Field */}
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                                     Email Address
                                 </Label>
-                                <div className="relative group">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-purple-400 transition-colors">
+                                <div className="relative">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                                         <Mail className="w-5 h-5" />
                                     </div>
                                     <Input
@@ -115,47 +132,29 @@ export default function PremiumLoginPage() {
                                         placeholder="you@company.com"
                                         disabled={isLoading}
                                         {...register("email")}
-                                        className="
-                                            h-14 pl-12 pr-4
-                                            bg-white/5 border-white/10 text-white placeholder:text-white/30
-                                            focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20
-                                            transition-all duration-300
-                                            hover:border-white/20 hover:bg-white/[0.07]
-                                            text-base
-                                            rounded-xl
-                                        "
+                                        className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                                     />
                                 </div>
                                 {errors.email && (
-                                    <motion.p
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="text-sm text-red-400 font-medium"
-                                    >
-                                        {errors.email.message}
-                                    </motion.p>
+                                    <p className="text-sm text-red-600">{errors.email.message}</p>
                                 )}
-                            </motion.div>
+                            </div>
 
-                            <motion.div
-                                initial={{ opacity: 0, x: -30 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 1.4, duration: 0.6 }}
-                                className="space-y-2.5"
-                            >
+                            {/* Password Field */}
+                            <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password" className="text-white/70 text-sm font-medium tracking-wide">
+                                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                                         Password
                                     </Label>
                                     <Link
                                         href="/forgot-password"
-                                        className="text-sm text-purple-400 hover:text-purple-300 transition-colors font-medium"
+                                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                                     >
-                                        Forgot?
+                                        Forgot password?
                                     </Link>
                                 </div>
-                                <div className="relative group">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-purple-400 transition-colors">
+                                <div className="relative">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                                         <Lock className="w-5 h-5" />
                                     </div>
                                     <Input
@@ -164,93 +163,59 @@ export default function PremiumLoginPage() {
                                         placeholder="Enter your password"
                                         disabled={isLoading}
                                         {...register("password")}
-                                        className="
-                                            h-14 pl-12 pr-4
-                                            bg-white/5 border-white/10 text-white placeholder:text-white/30
-                                            focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20
-                                            transition-all duration-300
-                                            hover:border-white/20 hover:bg-white/[0.07]
-                                            text-base
-                                            rounded-xl
-                                        "
+                                        className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                                     />
                                 </div>
                                 {errors.password && (
-                                    <motion.p
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="text-sm text-red-400 font-medium"
-                                    >
-                                        {errors.password.message}
-                                    </motion.p>
+                                    <p className="text-sm text-red-600">{errors.password.message}</p>
                                 )}
-                            </motion.div>
+                            </div>
 
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 1.5, duration: 0.6 }}
-                                className="pt-4"
+                            {/* Submit Button */}
+                            <Button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-base"
                             >
-                                <PremiumButton
-                                    type="submit"
-                                    className="w-full h-14 text-base font-semibold tracking-wide group"
-                                    loading={isLoading}
-                                    size="lg"
-                                >
+                                {isLoading ? (
+                                    "Signing in..."
+                                ) : (
                                     <span className="flex items-center justify-center gap-2">
-                                        {isLoading ? "Signing in..." : "Sign In"}
-                                        {!isLoading && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
+                                        Sign In
+                                        <ArrowRight className="w-5 h-5" />
                                     </span>
-                                </PremiumButton>
-                            </motion.div>
+                                )}
+                            </Button>
                         </form>
 
                         {/* Divider */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 1.6 }}
-                            className="relative my-8"
-                        >
+                        <div className="relative my-8">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-white/10"></div>
+                                <div className="w-full border-t border-gray-300"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-4 bg-transparent text-white/40 font-light">or</span>
+                                <span className="px-4 bg-white text-gray-500">or</span>
                             </div>
-                        </motion.div>
+                        </div>
 
-                        {/* Footer */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 1.7 }}
-                            className="text-center"
-                        >
-                            <p className="text-white/50 text-sm font-light">
-                                Don't have an account?{" "}
-                                <Link
-                                    href="/signup"
-                                    className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
-                                >
-                                    Create one
-                                </Link>
-                            </p>
-                        </motion.div>
-                    </AuthCard>
+                        {/* Sign Up Link */}
+                        <p className="text-center text-sm text-gray-600">
+                            Don&apos;t have an account?{" "}
+                            <Link
+                                href="/signup"
+                                className="text-blue-600 hover:text-blue-700 font-semibold"
+                            >
+                                Create one
+                            </Link>
+                        </p>
+                    </div>
 
-                    {/* Bottom text */}
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1.8 }}
-                        className="text-center mt-8 text-white/30 text-sm font-light"
-                    >
+                    {/* Footer */}
+                    <p className="text-center mt-8 text-sm text-gray-500">
                         Secured by Technnext HRMS
-                    </motion.p>
-                </motion.div>
+                    </p>
+                </div>
             </div>
-        </>
+        </div>
     )
 }

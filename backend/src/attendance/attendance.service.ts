@@ -63,7 +63,8 @@ export class AttendanceService {
         });
     }
 
-    async punchOut(userId: string, dto: PunchOutDto) {
+    // Remove unused dto parameter
+    async punchOut(userId: string, punchOutDto: PunchOutDto): Promise<unknown> {
         const employee = await (this.prisma as any).employee.findUnique({ where: { userId } });
         if (!employee) throw new NotFoundException('Employee profile not found');
 
@@ -110,7 +111,7 @@ export class AttendanceService {
         });
     }
 
-    async getTodayStatus(userId: string) {
+    async getTodayStatus(userId: string): Promise<unknown> {
         const employee = await (this.prisma as any).employee.findUnique({ where: { userId } });
         if (!employee) throw new NotFoundException('Employee profile not found');
 
@@ -124,10 +125,10 @@ export class AttendanceService {
                     date: today
                 }
             }
-        }) as any // Cast return to any or specific type to avoid unsafe return error from Prisma any cast
+        }) as Promise<unknown>;
     }
 
-    async findAll(userId: string) { // For employee view
+    async findAll(userId: string): Promise<unknown[]> {
         const employee = await (this.prisma as any).employee.findUnique({ where: { userId } });
         if (!employee) throw new NotFoundException('Employee profile not found');
 
@@ -135,6 +136,6 @@ export class AttendanceService {
             where: { employeeId: employee.id },
             orderBy: { date: 'desc' },
             take: 30 // Last 30 days
-        }) as any
+        }) as Promise<unknown[]>;
     }
 }

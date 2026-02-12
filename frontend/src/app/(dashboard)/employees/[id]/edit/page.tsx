@@ -39,8 +39,8 @@ export default function EditEmployeePage() {
     const params = useParams()
     const [isLoading, setIsLoading] = useState(false)
     const [isFetching, setIsFetching] = useState(true)
-    const [departments, setDepartments] = useState<any[]>([])
-    const [designations, setDesignations] = useState<any[]>([])
+    const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
+    const [designations, setDesignations] = useState<Array<{ id: string; name: string }>>([])
 
     const {
         register,
@@ -88,7 +88,8 @@ export default function EditEmployeePage() {
                 setIsFetching(false)
             }
         }
-        fetchData()
+        void fetchData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [params.id])
 
     async function onSubmit(data: EmployeeFormValues) {
@@ -102,9 +103,10 @@ export default function EditEmployeePage() {
             await api.patch(`/employees/${params.id}`, payload)
             toast.success("Employee updated successfully")
             router.push("/employees")
-        } catch (error: any) {
+        } catch (error) {
+            const err = error as { response?: { data?: { message?: string } } }
             console.error(error)
-            const message = error.response?.data?.message || "Failed to update employee"
+            const message = err.response?.data?.message || "Failed to update employee"
             toast.error(message)
         } finally {
             setIsLoading(false)
