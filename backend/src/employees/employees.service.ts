@@ -47,8 +47,9 @@ export class EmployeesService {
     const password = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    let result;
     try {
-      return await this.prisma.$transaction(async (prisma) => {
+      result = await this.prisma.$transaction(async (prisma) => {
         const user = await prisma.user.create({
           data: {
             email: createEmployeeDto.email,
@@ -72,29 +73,31 @@ export class EmployeesService {
           },
         });
 
-        // Send onboarding email
-        // In dev environment, this will log to console
-        const loginLink = 'http://localhost:3000/login';
-        try {
-          await this.emailService.sendOnboardingEmail(
-            employee.email,
-            `${employee.firstName} ${employee.lastName}`,
-            password,
-            loginLink,
-          );
-        } catch (emailError: unknown) {
-          const error = emailError as Error;
-          console.error('Failed to send onboarding email:', error.message);
-          // verified: do not fail transaction if email fails, but maybe we should?
-          // For now, log and proceed is safer for data consistency test.
-        }
-
-        return employee;
+        return { user, employee };
       });
     } catch (error) {
       console.error('Error creating employee:', error);
       throw error;
     }
+
+    // Send onboarding email OUTSIDE the transaction
+    // In dev environment, this will log to console
+    const loginLink = process.env.FRONTEND_URL || 'http://localhost:3000/login';
+    try {
+      // We use the password generated above
+      await this.emailService.sendOnboardingEmail(
+        result.employee.email,
+        `${result.employee.firstName} ${result.employee.lastName}`,
+        password,
+        loginLink,
+      );
+    } catch (emailError: unknown) {
+      // Email failure should not rollback employee creation
+      const error = emailError as Error;
+      console.error('Failed to send onboarding email:', error.message);
+    }
+
+    return result.employee;
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
