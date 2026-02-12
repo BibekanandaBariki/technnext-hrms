@@ -1,50 +1,29 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private resend: Resend;
   private readonly logger = new Logger(EmailService.name);
+  private readonly fromEmail: string;
 
   constructor(private configService: ConfigService) {
-    // const nodeEnv = this.configService.get<string>('NODE_ENV');
-    const smtpHost = this.configService.get<string>('SMTP_HOST');
-    const smtpPort = this.configService.get<number>('SMTP_PORT');
-    const smtpUser = this.configService.get<string>('SMTP_USER');
-    const smtpPass = this.configService.get<string>('SMTP_PASS');
-    const smtpSecure = this.configService.get<string>('SMTP_SECURE') === 'true';
+    const resendApiKey = this.configService.get<string>('RESEND_API_KEY');
 
-    // If SMTP credentials are provided, use real SMTP
-    if (smtpHost && smtpPort && smtpUser && smtpPass) {
-      this.logger.log('Configuring SMTP transport for real email sending');
-      this.transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpSecure, // true for 465, false for other ports
-        pool: true, // Use connection pooling
-        maxConnections: 5,
-        maxMessages: 100,
-        rateLimit: 10, // 10 emails per second
-        // Increase timeouts (Gmail can be slow)
-        connectionTimeout: 20000, // 20 seconds
-        greetingTimeout: 20000,
-        socketTimeout: 30000,
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-      });
-    } else {
-      // Development mode: log to console only
+    if (!resendApiKey) {
       this.logger.warn(
-        'No SMTP credentials found. Emails will be logged to console only.',
+        'RESEND_API_KEY not found. Email functionality will be disabled.',
       );
-      this.transporter = nodemailer.createTransport({
-        jsonTransport: true,
-      });
+    } else {
+      this.resend = new Resend(resendApiKey);
+      this.logger.log('Resend API initialized successfully');
     }
+
+    // Use configured from email or default
+    this.fromEmail =
+      this.configService.get<string>('EMAIL_FROM') ||
+      'Technnext HR <onboarding@resend.dev>';
   }
 
   async sendOnboardingEmail(
@@ -55,157 +34,189 @@ export class EmailService {
   ) {
     this.logger.log(`Preparing to send onboarding email to ${to}`);
 
+    if (!this.resend) {
+      this.logger.error('Resend not initialized. Cannot send email.');
+      throw new Error('Email service not configured');
+    }
+
     const subject = 'Welcome to Technnext HRMS - Your Account Details';
-    const text = `
-            Dear ${name},
-
-            Welcome to the team! Your account has been created.
-
-            Login Details:
-            Email: ${to}
-            Temporary Password: ${password}
-            
-            Please login at: ${link}
-            
-            After logging in, please update your profile and upload necessary documents.
-
-            Best regards,
-            HR Team
-        `;
 
     const html = `
-            <h3>Welcome to Technnext HRMS!</h3>
-            <p>Dear ${name},</p>
-            <p>Welcome to the team! Your account has been created.</p>
-            <p><strong>Login Details:</strong></p>
-            <ul>
-                <li>Email: ${to}</li>
-                <li>Temporary Password: <strong>${password}</strong></li>
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0;">Welcome to Technnext HRMS!</h1>
+          </div>
+          
+          <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+            <p style="font-size: 16px;">Dear <strong>${name}</strong>,</p>
+            
+            <p>Welcome to the team! Your account has been successfully created.</p>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea;">
+              <h3 style="margin-top: 0; color: #667eea;">Login Details</h3>
+              <p style="margin: 10px 0;"><strong>Email:</strong> ${to}</p>
+              <p style="margin: 10px 0;"><strong>Temporary Password:</strong> <code style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 14px;">${password}</code></p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${link}" style="background-color: #667eea; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Login to Your Account</a>
+            </div>
+            
+            <p style="color: #666; font-size: 14px;">After logging in, please:</p>
+            <ul style="color: #666; font-size: 14px;">
+              <li>Change your temporary password</li>
+              <li>Complete your profile</li>
+              <li>Upload necessary documents</li>
             </ul>
-            <p>Please login at: <a href="${link}">${link}</a></p>
-            <p>After logging in, please update your profile and upload necessary documents.</p>
-            <br/>
-            <p>Best regards,<br/>HR Team</p>
-        `;
+            
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+            
+            <p style="color: #999; font-size: 12px; text-align: center;">
+              This is an automated message. Please do not reply to this email.<br>
+              If you have any questions, contact your HR department.
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const text = `
+Dear ${name},
+
+Welcome to the team! Your account has been created.
+
+Login Details:
+Email: ${to}
+Temporary Password: ${password}
+
+Please login at: ${link}
+
+After logging in, please update your profile and upload necessary documents.
+
+Best regards,
+HR Team
+    `;
 
     try {
-      const info = await this.sendMailWithRetry({
-        from: '"Technnext HR" <noreply@technnexthrms.com>',
-        to,
+      const { data, error } = await this.resend.emails.send({
+        from: this.fromEmail,
+        to: [to],
         subject,
-        text,
         html,
+        text,
       });
 
-      this.logger.log(`Email sent: ${info.messageId}`);
-
-      // CRITICAL: LOG CREDENTIALS TO CONSOLE SO USER CAN SEE THEM
-      console.log('---------------------------------------------------');
-      console.log(`[EMAIL SENT TO ${to}]`);
-      console.log(`Subject: ${subject}`);
-      console.log(`Password: ${password}`);
-      console.log(`Link: ${link}`);
-      console.log('---------------------------------------------------');
-
-      return info;
-    } catch (error) {
-      this.logger.error('Failed to send email after retries', error);
-      // Fallback log
-      console.log('---------------------------------------------------');
-      console.log(`[EMAIL FAILED - FALLBACK LOG]`);
-      console.log(`To: ${to}`);
-      console.log(`Password: ${password}`);
-      console.log('---------------------------------------------------');
-    }
-  }
-
-  private async sendMailWithRetry(
-    mailOptions: nodemailer.SendMailOptions,
-    retries = 3,
-    delay = 1000,
-  ) {
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await this.transporter.sendMail(mailOptions);
-      } catch (error) {
-        const isLastAttempt = i === retries - 1;
-        this.logger.warn(
-          `Email attempt ${i + 1}/${retries} failed: ${(error as Error).message}`,
-        );
-
-        if (isLastAttempt) throw error;
-
-        // Wait before retrying (exponential backoff: 1s, 2s, 4s...)
-        const waitTime = delay * Math.pow(2, i);
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      if (error) {
+        this.logger.error('Resend API error:', error);
+        throw new Error(`Failed to send email: ${error.message}`);
       }
+
+      this.logger.log(`Onboarding email sent successfully. ID: ${data?.id}`);
+      return { messageId: data?.id, success: true };
+    } catch (error) {
+      this.logger.error('Failed to send onboarding email', error);
+      throw error;
     }
   }
 
   async sendPasswordResetEmail(to: string, name: string, resetLink: string) {
     this.logger.log(`Preparing to send password reset email to ${to}`);
 
+    if (!this.resend) {
+      this.logger.error('Resend not initialized. Cannot send email.');
+      throw new Error('Email service not configured');
+    }
+
     const subject = 'Reset Your Technnext HRMS Password';
-    const text = `
-            Hi ${name},
-
-            We received a request to reset your password for your Technnext HRMS account.
-
-            Click the link below to reset your password:
-            ${resetLink}
-
-            This link will expire in 1 hour.
-
-            If you didn't request this, please ignore this email.
-
-            Best regards,
-            HR Team
-        `;
 
     const html = `
-            <h3>Reset Your Password</h3>
-            <p>Hi ${name},</p>
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0;">Password Reset Request</h1>
+          </div>
+          
+          <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+            <p style="font-size: 16px;">Hi <strong>${name}</strong>,</p>
+            
             <p>We received a request to reset your password for your Technnext HRMS account.</p>
-            <p>Click the button below to reset your password:</p>
-            <div style="margin: 20px 0;">
-                <a href="${resetLink}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Reset Password</a>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetLink}" style="background-color: #667eea; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Reset Password</a>
             </div>
-            <p>Or copy and paste this link into your browser:</p>
-            <p><a href="${resetLink}">${resetLink}</a></p>
-            <p><strong>This link will expire in 1 hour.</strong></p>
-            <p>If you didn't request this, please ignore this email.</p>
-            <br/>
-            <p>Best regards,<br/>HR Team</p>
-        `;
+            
+            <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+            <p style="background: #f0f0f0; padding: 10px; border-radius: 4px; word-break: break-all; font-size: 12px;">
+              <a href="${resetLink}" style="color: #667eea;">${resetLink}</a>
+            </p>
+            
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="margin: 0; color: #856404; font-size: 14px;">
+                <strong>⚠️ Important:</strong> This link will expire in 1 hour.
+              </p>
+            </div>
+            
+            <p style="color: #666; font-size: 14px;">If you didn't request this password reset, please ignore this email. Your password will remain unchanged.</p>
+            
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+            
+            <p style="color: #999; font-size: 12px; text-align: center;">
+              This is an automated message. Please do not reply to this email.<br>
+              If you have any questions, contact your HR department.
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const text = `
+Hi ${name},
+
+We received a request to reset your password for your Technnext HRMS account.
+
+Click the link below to reset your password:
+${resetLink}
+
+This link will expire in 1 hour.
+
+If you didn't request this, please ignore this email.
+
+Best regards,
+HR Team
+    `;
 
     try {
-      const info = await this.sendMailWithRetry({
-        from: '"Technnext HR" <noreply@technnexthrms.com>',
-        to,
+      const { data, error } = await this.resend.emails.send({
+        from: this.fromEmail,
+        to: [to],
         subject,
-        text,
         html,
+        text,
       });
 
-      this.logger.log(`Password reset email sent: ${info.messageId}`);
+      if (error) {
+        this.logger.error('Resend API error:', error);
+        throw new Error(`Failed to send email: ${error.message}`);
+      }
 
-      // Log for development
-      console.log('---------------------------------------------------');
-      console.log(`[PASSWORD RESET EMAIL SENT TO ${to}]`);
-      console.log(`Reset Link: ${resetLink}`);
-      console.log('---------------------------------------------------');
-
-      return info;
-    } catch (error) {
-      this.logger.error(
-        'Failed to send password reset email after retries',
-        error,
+      this.logger.log(
+        `Password reset email sent successfully. ID: ${data?.id}`,
       );
-      console.log('---------------------------------------------------');
-      console.log(`[EMAIL FAILED - FALLBACK LOG]`);
-      console.log(`To: ${to}`);
-      console.log(`Reset Link: ${resetLink}`);
-      console.log('---------------------------------------------------');
+      return { messageId: data?.id, success: true };
+    } catch (error) {
+      this.logger.error('Failed to send password reset email', error);
+      throw error;
     }
   }
 }
