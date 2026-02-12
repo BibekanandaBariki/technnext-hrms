@@ -24,7 +24,7 @@ interface RequestUser {
 @Controller('attendance')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) {}
+  constructor(private readonly attendanceService: AttendanceService) { }
 
   @Post('punch-in')
   punchIn(
@@ -38,7 +38,7 @@ export class AttendanceController {
 
   @Post('punch-out')
   punchOut(@GetUser() user: RequestUser, @Body() dto: PunchOutDto) {
-    return this.attendanceService.punchOut(user.id, dto);
+    return this.attendanceService.punchOut(user.id);
   }
 
   @Get('today')
