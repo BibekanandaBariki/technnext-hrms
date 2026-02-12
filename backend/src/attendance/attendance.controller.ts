@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { PunchInDto } from './dto/punch-in.dto';
-import { PunchOutDto } from './dto/punch-out.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
@@ -24,7 +23,7 @@ interface RequestUser {
 @Controller('attendance')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) { }
+  constructor(private readonly attendanceService: AttendanceService) {}
 
   @Post('punch-in')
   punchIn(
@@ -37,7 +36,7 @@ export class AttendanceController {
   }
 
   @Post('punch-out')
-  punchOut(@GetUser() user: RequestUser, @Body() dto: PunchOutDto) {
+  punchOut(@GetUser() user: RequestUser) {
     return this.attendanceService.punchOut(user.id);
   }
 
