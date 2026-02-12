@@ -4,8 +4,8 @@ import { LeavesController } from './leaves.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    controllers: [LeavesController],
-    providers: [LeavesService],
+  imports: [PrismaModule],
+  controllers: [LeavesController],
+  providers: [LeavesService],
 })
-export class LeavesModule { }
+export class LeavesModule {}

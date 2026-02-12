@@ -4,8 +4,8 @@ import { TaxController } from './tax.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    controllers: [TaxController],
-    providers: [TaxService],
+  imports: [PrismaModule],
+  controllers: [TaxController],
+  providers: [TaxService],
 })
-export class TaxModule { }
+export class TaxModule {}

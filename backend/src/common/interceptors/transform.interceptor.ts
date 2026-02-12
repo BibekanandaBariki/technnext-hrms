@@ -1,22 +1,34 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 export interface Response<T> {
-    success: true;
-    data: T;
-    message?: string;
+  success: true;
+  data: T;
+  message?: string;
 }
 
 @Injectable()
-export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> {
-    intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
-        return next.handle().pipe(
-            map((data) => ({
-                success: true,
-                data,
-                message: 'Request successful', // Can be customized
-            })),
-        );
-    }
+export class TransformInterceptor<T> implements NestInterceptor<
+  T,
+  Response<T>
+> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<Response<T>> {
+    return next.handle().pipe(
+      map((data) => ({
+        success: true,
+        data,
+        message: 'Request successful', // Can be customized
+      })),
+    );
+  }
 }

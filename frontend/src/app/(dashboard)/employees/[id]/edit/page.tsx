@@ -266,7 +266,7 @@ export default function EditEmployeePage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="employmentType">Employment Type</Label>
-                                <Select onValueChange={(val) => setValue("employmentType", val as any)}>
+                                <Select onValueChange={(val) => setValue("employmentType", val as "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERN")}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select Type" />
                                     </SelectTrigger>

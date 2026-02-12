@@ -1,46 +1,54 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-    private transporter: nodemailer.Transporter;
-    private readonly logger = new Logger(EmailService.name);
+  private transporter: nodemailer.Transporter;
+  private readonly logger = new Logger(EmailService.name);
 
-    constructor(private configService: ConfigService) {
-        const nodeEnv = this.configService.get<string>('NODE_ENV');
-        const smtpHost = this.configService.get<string>('SMTP_HOST');
-        const smtpPort = this.configService.get<number>('SMTP_PORT');
-        const smtpUser = this.configService.get<string>('SMTP_USER');
-        const smtpPass = this.configService.get<string>('SMTP_PASS');
-        const smtpSecure = this.configService.get<string>('SMTP_SECURE') === 'true';
+  constructor(private configService: ConfigService) {
+    // const nodeEnv = this.configService.get<string>('NODE_ENV');
+    const smtpHost = this.configService.get<string>('SMTP_HOST');
+    const smtpPort = this.configService.get<number>('SMTP_PORT');
+    const smtpUser = this.configService.get<string>('SMTP_USER');
+    const smtpPass = this.configService.get<string>('SMTP_PASS');
+    const smtpSecure = this.configService.get<string>('SMTP_SECURE') === 'true';
 
-        // If SMTP credentials are provided, use real SMTP
-        if (smtpHost && smtpPort && smtpUser && smtpPass) {
-            this.logger.log('Configuring SMTP transport for real email sending');
-            this.transporter = nodemailer.createTransport({
-                host: smtpHost,
-                port: smtpPort,
-                secure: smtpSecure, // true for 465, false for other ports
-                auth: {
-                    user: smtpUser,
-                    pass: smtpPass,
-                },
-            });
-        } else {
-            // Development mode: log to console only
-            this.logger.warn('No SMTP credentials found. Emails will be logged to console only.');
-            this.transporter = nodemailer.createTransport({
-                jsonTransport: true
-            });
-        }
+    // If SMTP credentials are provided, use real SMTP
+    if (smtpHost && smtpPort && smtpUser && smtpPass) {
+      this.logger.log('Configuring SMTP transport for real email sending');
+      this.transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpSecure, // true for 465, false for other ports
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
+    } else {
+      // Development mode: log to console only
+      this.logger.warn(
+        'No SMTP credentials found. Emails will be logged to console only.',
+      );
+      this.transporter = nodemailer.createTransport({
+        jsonTransport: true,
+      });
     }
+  }
 
-    async sendOnboardingEmail(to: string, name: string, password: string, link: string) {
-        this.logger.log(`Preparing to send onboarding email to ${to}`);
+  async sendOnboardingEmail(
+    to: string,
+    name: string,
+    password: string,
+    link: string,
+  ) {
+    this.logger.log(`Preparing to send onboarding email to ${to}`);
 
-        const subject = 'Welcome to Technnext HRMS - Your Account Details';
-        const text = `
+    const subject = 'Welcome to Technnext HRMS - Your Account Details';
+    const text = `
             Dear ${name},
 
             Welcome to the team! Your account has been created.
@@ -57,7 +65,7 @@ export class EmailService {
             HR Team
         `;
 
-        const html = `
+    const html = `
             <h3>Welcome to Technnext HRMS!</h3>
             <p>Dear ${name},</p>
             <p>Welcome to the team! Your account has been created.</p>
@@ -72,43 +80,44 @@ export class EmailService {
             <p>Best regards,<br/>HR Team</p>
         `;
 
-        try {
-            const info = await this.transporter.sendMail({
-                from: '"Technnext HR" <noreply@technnexthrms.com>',
-                to,
-                subject,
-                text,
-                html,
-            });
+    try {
+      const info = await this.transporter.sendMail({
+        from: '"Technnext HR" <noreply@technnexthrms.com>',
+        to,
+        subject,
+        text,
+        html,
+      });
 
-            this.logger.log(`Email sent (mock): ${info.messageId}`);
-            this.logger.log(`PREVIEW URL: ${nodemailer.getTestMessageUrl(info)}`); // Only works with Ethereal
+      this.logger.log(`Email sent (mock): ${info.messageId}`);
 
-            // CRITICAL: LOG CREDENTIALS TO CONSOLE SO USER CAN SEE THEM
-            console.log('---------------------------------------------------');
-            console.log(`[EMAIL SENT TO ${to}]`);
-            console.log(`Subject: ${subject}`);
-            console.log(`Password: ${password}`);
-            console.log(`Link: ${link}`);
-            console.log('---------------------------------------------------');
+      this.logger.log(`PREVIEW URL: ${nodemailer.getTestMessageUrl(info)}`); // Only works with Ethereal
 
-            return info;
-        } catch (error) {
-            this.logger.error('Failed to send email', error);
-            // Fallback log
-            console.log('---------------------------------------------------');
-            console.log(`[EMAIL FAILED - FALLBACK LOG]`);
-            console.log(`To: ${to}`);
-            console.log(`Password: ${password}`);
-            console.log('---------------------------------------------------');
-        }
+      // CRITICAL: LOG CREDENTIALS TO CONSOLE SO USER CAN SEE THEM
+      console.log('---------------------------------------------------');
+      console.log(`[EMAIL SENT TO ${to}]`);
+      console.log(`Subject: ${subject}`);
+      console.log(`Password: ${password}`);
+      console.log(`Link: ${link}`);
+      console.log('---------------------------------------------------');
+
+      return info;
+    } catch (error) {
+      this.logger.error('Failed to send email', error);
+      // Fallback log
+      console.log('---------------------------------------------------');
+      console.log(`[EMAIL FAILED - FALLBACK LOG]`);
+      console.log(`To: ${to}`);
+      console.log(`Password: ${password}`);
+      console.log('---------------------------------------------------');
     }
+  }
 
-    async sendPasswordResetEmail(to: string, name: string, resetLink: string) {
-        this.logger.log(`Preparing to send password reset email to ${to}`);
+  async sendPasswordResetEmail(to: string, name: string, resetLink: string) {
+    this.logger.log(`Preparing to send password reset email to ${to}`);
 
-        const subject = 'Reset Your Technnext HRMS Password';
-        const text = `
+    const subject = 'Reset Your Technnext HRMS Password';
+    const text = `
             Hi ${name},
 
             We received a request to reset your password for your Technnext HRMS account.
@@ -124,7 +133,7 @@ export class EmailService {
             HR Team
         `;
 
-        const html = `
+    const html = `
             <h3>Reset Your Password</h3>
             <p>Hi ${name},</p>
             <p>We received a request to reset your password for your Technnext HRMS account.</p>
@@ -140,31 +149,31 @@ export class EmailService {
             <p>Best regards,<br/>HR Team</p>
         `;
 
-        try {
-            const info = await this.transporter.sendMail({
-                from: '"Technnext HR" <noreply@technnexthrms.com>',
-                to,
-                subject,
-                text,
-                html,
-            });
+    try {
+      const info = await this.transporter.sendMail({
+        from: '"Technnext HR" <noreply@technnexthrms.com>',
+        to,
+        subject,
+        text,
+        html,
+      });
 
-            this.logger.log(`Password reset email sent: ${info.messageId}`);
+      this.logger.log(`Password reset email sent: ${info.messageId}`);
 
-            // Log for development
-            console.log('---------------------------------------------------');
-            console.log(`[PASSWORD RESET EMAIL SENT TO ${to}]`);
-            console.log(`Reset Link: ${resetLink}`);
-            console.log('---------------------------------------------------');
+      // Log for development
+      console.log('---------------------------------------------------');
+      console.log(`[PASSWORD RESET EMAIL SENT TO ${to}]`);
+      console.log(`Reset Link: ${resetLink}`);
+      console.log('---------------------------------------------------');
 
-            return info;
-        } catch (error) {
-            this.logger.error('Failed to send password reset email', error);
-            console.log('---------------------------------------------------');
-            console.log(`[EMAIL FAILED - FALLBACK LOG]`);
-            console.log(`To: ${to}`);
-            console.log(`Reset Link: ${resetLink}`);
-            console.log('---------------------------------------------------');
-        }
+      return info;
+    } catch (error) {
+      this.logger.error('Failed to send password reset email', error);
+      console.log('---------------------------------------------------');
+      console.log(`[EMAIL FAILED - FALLBACK LOG]`);
+      console.log(`To: ${to}`);
+      console.log(`Reset Link: ${resetLink}`);
+      console.log('---------------------------------------------------');
     }
+  }
 }

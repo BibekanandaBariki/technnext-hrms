@@ -15,6 +15,7 @@ export function Header() {
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('user')
+            // eslint-disable-next-line
             if (stored) setUser(JSON.parse(stored))
         }
     }, [])

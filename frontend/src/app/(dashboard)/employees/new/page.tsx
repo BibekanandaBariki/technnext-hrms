@@ -45,8 +45,8 @@ interface ApiError {
 export default function AddEmployeePage() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
-    const [departments, setDepartments] = useState<any[]>([])
-    const [designations, setDesignations] = useState<any[]>([])
+    const [departments, setDepartments] = useState<{ id: string; name: string }[]>([])
+    const [designations, setDesignations] = useState<{ id: string; name: string }[]>([])
 
     const {
         register,
@@ -209,7 +209,7 @@ export default function AddEmployeePage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="employmentType">Employment Type</Label>
-                                <Select onValueChange={(val) => setValue("employmentType", val as any)} defaultValue="FULL_TIME">
+                                <Select onValueChange={(val) => setValue("employmentType", val as "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERN")} defaultValue="FULL_TIME">
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select Type" />
                                     </SelectTrigger>

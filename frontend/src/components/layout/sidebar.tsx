@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, Users, UserCheck, CalendarDays, Receipt, BarChart3, FileText, LogOut } from "lucide-react"
 
@@ -56,7 +57,9 @@ export function Sidebar() {
                 <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
                     {/* <LayoutDashboard className="h-6 w-6" /> */}
                     {/* <span>Technnext HRMS</span> */}
-                    <img src="/logo.png" alt="Technnext HRMS" className="h-10 w-auto" />
+                    <div className="relative h-10 w-auto aspect-[3/1]">
+                        <Image src="/logo.png" alt="Technnext HRMS" fill className="object-contain" />
+                    </div>
                 </Link>
             </div>
             <div className="flex-1 overflow-auto py-4">
