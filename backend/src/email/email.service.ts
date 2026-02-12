@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
@@ -23,6 +23,14 @@ export class EmailService {
         host: smtpHost,
         port: smtpPort,
         secure: smtpSecure, // true for 465, false for other ports
+        pool: true, // Use connection pooling
+        maxConnections: 5,
+        maxMessages: 100,
+        rateLimit: 10, // 10 emails per second
+        // Increase timeouts (Gmail can be slow)
+        connectionTimeout: 20000, // 20 seconds
+        greetingTimeout: 20000,
+        socketTimeout: 30000,
         auth: {
           user: smtpUser,
           pass: smtpPass,
@@ -81,7 +89,7 @@ export class EmailService {
         `;
 
     try {
-      const info = await this.transporter.sendMail({
+      const info = await this.sendMailWithRetry({
         from: '"Technnext HR" <noreply@technnexthrms.com>',
         to,
         subject,
@@ -89,9 +97,7 @@ export class EmailService {
         html,
       });
 
-      this.logger.log(`Email sent (mock): ${info.messageId}`);
-
-      this.logger.log(`PREVIEW URL: ${nodemailer.getTestMessageUrl(info)}`); // Only works with Ethereal
+      this.logger.log(`Email sent: ${info.messageId}`);
 
       // CRITICAL: LOG CREDENTIALS TO CONSOLE SO USER CAN SEE THEM
       console.log('---------------------------------------------------');
@@ -103,13 +109,36 @@ export class EmailService {
 
       return info;
     } catch (error) {
-      this.logger.error('Failed to send email', error);
+      this.logger.error('Failed to send email after retries', error);
       // Fallback log
       console.log('---------------------------------------------------');
       console.log(`[EMAIL FAILED - FALLBACK LOG]`);
       console.log(`To: ${to}`);
       console.log(`Password: ${password}`);
       console.log('---------------------------------------------------');
+    }
+  }
+
+  private async sendMailWithRetry(
+    mailOptions: nodemailer.SendMailOptions,
+    retries = 3,
+    delay = 1000,
+  ) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await this.transporter.sendMail(mailOptions);
+      } catch (error) {
+        const isLastAttempt = i === retries - 1;
+        this.logger.warn(
+          `Email attempt ${i + 1}/${retries} failed: ${(error as Error).message}`,
+        );
+
+        if (isLastAttempt) throw error;
+
+        // Wait before retrying (exponential backoff: 1s, 2s, 4s...)
+        const waitTime = delay * Math.pow(2, i);
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
     }
   }
 
@@ -150,7 +179,7 @@ export class EmailService {
         `;
 
     try {
-      const info = await this.transporter.sendMail({
+      const info = await this.sendMailWithRetry({
         from: '"Technnext HR" <noreply@technnexthrms.com>',
         to,
         subject,
@@ -168,7 +197,10 @@ export class EmailService {
 
       return info;
     } catch (error) {
-      this.logger.error('Failed to send password reset email', error);
+      this.logger.error(
+        'Failed to send password reset email after retries',
+        error,
+      );
       console.log('---------------------------------------------------');
       console.log(`[EMAIL FAILED - FALLBACK LOG]`);
       console.log(`To: ${to}`);
