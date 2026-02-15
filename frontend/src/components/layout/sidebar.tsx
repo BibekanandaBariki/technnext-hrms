@@ -77,7 +77,7 @@ export function Sidebar() {
                     {/* <LayoutDashboard className="h-6 w-6" /> */}
                     {/* <span>Technnext HRMS</span> */}
                     <div className="relative h-10 w-36">
-                        <Image src="/technnext-logo.png" alt="Technnext HRMS" fill className="object-contain" />
+                        <Image src="/technext-logo.png" alt="Technnext HRMS" fill className="object-contain" priority />
                     </div>
                 </Link>
             </div>
