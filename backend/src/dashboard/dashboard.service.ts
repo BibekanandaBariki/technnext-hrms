@@ -6,24 +6,40 @@ export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
   async getAdminStats() {
-    const totalEmployees = await this.prisma.employee.count();
-    const activeEmployees = await this.prisma.employee.count({
-      where: { status: 'ACTIVE' },
-    });
-    const onLeaveToday = await this.prisma.attendance.count({
-      where: {
-        date: new Date(), // This needs proper date handling (start of day)
-        attendanceType: 'LEAVE',
-      },
-    });
+    const [
+      totalEmployees,
+      activeEmployees,
+      pendingOnboarding,
+      pendingDocuments,
+      payrollDraft,
+      payrollProcessed,
+      payrollPaid,
+      onLeaveToday,
+    ] = await Promise.all([
+      this.prisma.employee.count(),
+      this.prisma.employee.count({ where: { status: 'ACTIVE' } }),
+      this.prisma.employee.count({ where: { status: 'ONBOARDING' } }),
+      this.prisma.employeeDocument.count({ where: { status: 'PENDING' } }),
+      this.prisma.payrollRecord.count({ where: { status: 'DRAFT' } }),
+      this.prisma.payrollRecord.count({ where: { status: 'PROCESSED' } }),
+      this.prisma.payrollRecord.count({ where: { status: 'PAID' } }),
+      this.prisma.attendance.count({
+        where: {
+          date: new Date(),
+          attendanceType: 'LEAVE',
+        },
+      }),
+    ]);
 
-    // Mocking some data for speed, real queries would be more complex
     return {
       totalEmployees,
       activeEmployees,
+      pendingOnboarding,
+      pendingDocuments,
+      payrollDraft,
+      payrollProcessed,
+      payrollPaid,
       onLeaveToday,
-      departments: 5, // Mock
-      openPositions: 3, // Mock
     };
   }
 }

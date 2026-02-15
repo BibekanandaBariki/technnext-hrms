@@ -12,6 +12,11 @@ interface DashboardStats {
     activeEmployees: number
     onLeaveToday: number
     openPositions: number
+    pendingOnboarding?: number
+    pendingDocuments?: number
+    payrollDraft?: number
+    payrollProcessed?: number
+    payrollPaid?: number
 }
 
 interface User {
@@ -24,6 +29,8 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null)
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
+    const requiredTypes = ["GOVERNMENT_ID","TAX_ID","RESUME","PROFILE_PHOTO","BANK_PROOF","EDUCATION","EXPERIENCE","OFFER_LETTER"]
+    const [docSummary, setDocSummary] = useState<{ approved: string[], pending: string[], missing: string[] }>({ approved: [], pending: [], missing: [] })
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -35,7 +42,8 @@ export default function DashboardPage() {
                 if (u.role === 'ADMIN' || u.role === 'HR') {
                     fetchAdminStats()
                 } else {
-                    setLoading(false) // No specific stats for employee yet in this view
+                    fetchEmployeeDocuments()
+                    setLoading(false)
                 }
             } else {
                 // Redirect to login if not authenticated
@@ -53,6 +61,19 @@ export default function DashboardPage() {
             // toast.error("Failed to load dashboard stats")
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchEmployeeDocuments = async () => {
+        try {
+            const res = await api.get('/documents')
+            const docs: Array<{ documentType: string, status: string }> = res.data.data || []
+            const approved = docs.filter(d => d.status === 'APPROVED').map(d => d.documentType)
+            const pending = docs.filter(d => d.status === 'PENDING').map(d => d.documentType)
+            const missing = requiredTypes.filter(t => !approved.includes(t) && !pending.includes(t))
+            setDocSummary({ approved, pending, missing })
+        } catch (error) {
+            setDocSummary({ approved: [], pending: [], missing: requiredTypes })
         }
     }
 
@@ -119,6 +140,46 @@ export default function DashboardPage() {
                             </p>
                         </CardContent>
                     </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Pending Onboarding</CardTitle>
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{loading ? "..." : stats?.pendingOnboarding || 0}</div>
+                            <p className="text-xs text-muted-foreground">Awaiting document approval</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Documents to Review</CardTitle>
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{loading ? "..." : stats?.pendingDocuments || 0}</div>
+                            <p className="text-xs text-muted-foreground">HR/Admin review queue</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Payroll (Processed)</CardTitle>
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{loading ? "..." : stats?.payrollProcessed || 0}</div>
+                            <p className="text-xs text-muted-foreground">Including current month</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Payroll (Paid)</CardTitle>
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{loading ? "..." : stats?.payrollPaid || 0}</div>
+                            <p className="text-xs text-muted-foreground">Paid out records</p>
+                        </CardContent>
+                    </Card>
                 </div>
             )}
 
@@ -132,6 +193,31 @@ export default function DashboardPage() {
                         <CardContent>
                             <p className="text-muted-foreground">Mark your attendance for today.</p>
                             <Button className="mt-4">Punch In</Button>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Onboarding Checklist</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                <p className="text-sm">Approved: {docSummary.approved.length}</p>
+                                <p className="text-sm">Pending: {docSummary.pending.length}</p>
+                                <p className="text-sm">Missing: {docSummary.missing.length}</p>
+                                <div className="flex gap-2 mt-2">
+                                    <Button size="sm" variant="outline" onClick={fetchEmployeeDocuments}>Refresh</Button>
+                                    <Button size="sm" variant="default" onClick={() => { window.location.href = '/documents' }}>Upload Documents</Button>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Payslip</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground">View and download your payslips.</p>
+                            <Button className="mt-2" variant="ghost" onClick={() => { window.location.href = '/payroll' }}>Go to Payroll</Button>
                         </CardContent>
                     </Card>
                 </div>
