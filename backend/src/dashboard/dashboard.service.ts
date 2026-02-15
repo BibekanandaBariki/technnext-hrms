@@ -109,4 +109,38 @@ export class DashboardService {
       reviewsThisQuarter,
     };
   }
+
+  async getManagerTeam(userId: string) {
+    const manager = await this.prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!manager) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const team = await this.prisma.employee.findMany({
+      where: { reportingManagerId: manager.id },
+      select: { id: true, firstName: true, lastName: true, email: true },
+    });
+    const enriched = await Promise.all(
+      team.map(async (emp) => {
+        const attendance = await this.prisma.attendance.findUnique({
+          where: {
+            employeeId_date: { employeeId: emp.id, date: today },
+          },
+        });
+        const pendingLeaves = await this.prisma.leave.count({
+          where: { employeeId: emp.id, status: 'PENDING' },
+        });
+        return {
+          id: emp.id,
+          name: `${emp.firstName} ${emp.lastName}`,
+          email: emp.email,
+          todayStatus: attendance?.attendanceType ?? 'ABSENT',
+          pendingLeaves,
+        };
+      }),
+    );
+    return enriched;
+  }
 }

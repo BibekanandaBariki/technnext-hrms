@@ -22,4 +22,10 @@ export class DashboardController {
   getManagerStats(@GetUser() user: { id: string }) {
     return this.dashboardService.getManagerStats(user.id);
   }
+
+  @Get('manager-team')
+  @Roles(Role.MANAGER, Role.ADMIN)
+  getManagerTeam(@GetUser() user: { id: string }) {
+    return this.dashboardService.getManagerTeam(user.id);
+  }
 }

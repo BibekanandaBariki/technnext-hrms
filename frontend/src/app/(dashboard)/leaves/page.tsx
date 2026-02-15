@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { toast } from "sonner"
@@ -30,10 +31,19 @@ interface Leave {
 export default function LeavesPage() {
     const [leaves, setLeaves] = useState<Leave[]>([])
     const [loading, setLoading] = useState(true)
+    const searchParams = useSearchParams()
+    const [viewMode, setViewMode] = useState<"MY" | "PENDING">("MY")
 
     useEffect(() => {
-        fetchLeaves()
-    }, [])
+        const view = searchParams.get("view")
+        if (view === "pending") {
+            setViewMode("PENDING")
+            fetchPendingLeaves()
+        } else {
+            setViewMode("MY")
+            fetchLeaves()
+        }
+    }, [searchParams])
 
     const fetchLeaves = async () => {
         try {
@@ -42,6 +52,18 @@ export default function LeavesPage() {
         } catch (error) {
             console.error(error)
             toast.error("Failed to fetch leave history")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const fetchPendingLeaves = async () => {
+        try {
+            const res = await api.get('/leaves/pending')
+            setLeaves(res.data.data || res.data)
+        } catch (error) {
+            console.error(error)
+            toast.error("Failed to fetch pending leaves")
         } finally {
             setLoading(false)
         }
@@ -60,17 +82,21 @@ export default function LeavesPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">Leave Management</h1>
-                <Button asChild>
+                <div className="flex gap-2">
+                    <Button variant={viewMode === "MY" ? "default" : "outline"} onClick={() => { setViewMode("MY"); fetchLeaves(); }}>My Leaves</Button>
+                    <Button variant={viewMode === "PENDING" ? "default" : "outline"} onClick={() => { setViewMode("PENDING"); fetchPendingLeaves(); }}>Pending Approvals</Button>
+                    <Button asChild>
                     <Link href="/leaves/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Apply for Leave
                     </Link>
-                </Button>
+                    </Button>
+                </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>My Leave History</CardTitle>
+                    <CardTitle>{viewMode === "PENDING" ? "Pending Leave Requests" : "My Leave History"}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>

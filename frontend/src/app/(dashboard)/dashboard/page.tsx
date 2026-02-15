@@ -32,6 +32,7 @@ export default function DashboardPage() {
     const requiredTypes = ["GOVERNMENT_ID","TAX_ID","RESUME","PROFILE_PHOTO","BANK_PROOF","EDUCATION","EXPERIENCE","OFFER_LETTER"]
     const [docSummary, setDocSummary] = useState<{ approved: string[], pending: string[], missing: string[] }>({ approved: [], pending: [], missing: [] })
     const [managerStats, setManagerStats] = useState<{ teamSize: number, teamPresentToday: number, teamPendingLeaves: number, teamGoalsInProgress: number, reviewsThisQuarter: number } | null>(null)
+    const [managerTeam, setManagerTeam] = useState<Array<{ id: string, name: string, email: string, todayStatus: string, pendingLeaves: number }>>([])
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -44,6 +45,7 @@ export default function DashboardPage() {
                     fetchAdminStats()
                 } else if (u.role === 'MANAGER') {
                     fetchManagerStats()
+                    fetchManagerTeam()
                     setLoading(false)
                 } else {
                     fetchEmployeeDocuments()
@@ -72,6 +74,15 @@ export default function DashboardPage() {
         try {
             const res = await api.get('/dashboard/manager-stats')
             setManagerStats(res.data.data)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    const fetchManagerTeam = async () => {
+        try {
+            const res = await api.get('/dashboard/manager-team')
+            setManagerTeam(res.data.data || res.data || [])
         } catch (error) {
             console.error(error)
         }
@@ -257,8 +268,9 @@ export default function DashboardPage() {
 
             {/* Manager View */}
             {user?.role === 'MANAGER' && (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card>
+                <div className="space-y-6">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Team Size</CardTitle>
                             <Users className="h-4 w-4 text-muted-foreground" />
@@ -267,8 +279,8 @@ export default function DashboardPage() {
                             <div className="text-2xl font-bold">{managerStats?.teamSize ?? 0}</div>
                             <p className="text-xs text-muted-foreground">Direct reports</p>
                         </CardContent>
-                    </Card>
-                    <Card>
+                        </Card>
+                        <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Present Today</CardTitle>
                             <UserCheck className="h-4 w-4 text-muted-foreground" />
@@ -277,8 +289,8 @@ export default function DashboardPage() {
                             <div className="text-2xl font-bold">{managerStats?.teamPresentToday ?? 0}</div>
                             <p className="text-xs text-muted-foreground">Attendance</p>
                         </CardContent>
-                    </Card>
-                    <Card>
+                        </Card>
+                        <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Pending Leaves</CardTitle>
                             <CalendarDays className="h-4 w-4 text-muted-foreground" />
@@ -287,8 +299,8 @@ export default function DashboardPage() {
                             <div className="text-2xl font-bold">{managerStats?.teamPendingLeaves ?? 0}</div>
                             <p className="text-xs text-muted-foreground">Awaiting approval</p>
                         </CardContent>
-                    </Card>
-                    <Card>
+                        </Card>
+                        <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Goals In Progress</CardTitle>
                             <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -297,8 +309,8 @@ export default function DashboardPage() {
                             <div className="text-2xl font-bold">{managerStats?.teamGoalsInProgress ?? 0}</div>
                             <p className="text-xs text-muted-foreground">Active goals</p>
                         </CardContent>
-                    </Card>
-                    <Card>
+                        </Card>
+                        <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Reviews This Quarter</CardTitle>
                             <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -306,6 +318,45 @@ export default function DashboardPage() {
                         <CardContent>
                             <div className="text-2xl font-bold">{managerStats?.reviewsThisQuarter ?? 0}</div>
                             <p className="text-xs text-muted-foreground">Submitted</p>
+                        </CardContent>
+                        </Card>
+                    </div>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">My Team</CardTitle>
+                            <div className="flex gap-2">
+                                <Button size="sm" variant="outline" onClick={() => { window.location.href = '/leaves?view=pending' }}>View Pending Leaves</Button>
+                                <Button size="sm" variant="outline" onClick={() => { window.location.href = '/performance' }}>Team Goals</Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full text-sm">
+                                    <thead>
+                                        <tr className="text-left border-b">
+                                            <th className="py-2 pr-4">Employee</th>
+                                            <th className="py-2 pr-4">Email</th>
+                                            <th className="py-2 pr-4">Today</th>
+                                            <th className="py-2 pr-4">Pending Leaves</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {managerTeam.map((m) => (
+                                            <tr key={m.id} className="border-b last:border-0">
+                                                <td className="py-2 pr-4">{m.name}</td>
+                                                <td className="py-2 pr-4">{m.email}</td>
+                                                <td className="py-2 pr-4">{m.todayStatus.replace('_', ' ')}</td>
+                                                <td className="py-2 pr-4">{m.pendingLeaves}</td>
+                                            </tr>
+                                        ))}
+                                        {managerTeam.length === 0 && (
+                                            <tr>
+                                                <td className="py-4 text-muted-foreground" colSpan={4}>No direct reports.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
