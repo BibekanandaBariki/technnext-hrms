@@ -1,6 +1,7 @@
  "use client"
  
- import { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
  import { toast } from "sonner"
  import api from "@/lib/api"
  import { Button } from "@/components/ui/button"
@@ -46,6 +47,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
    const [loading, setLoading] = useState(true)
    const [saving, setSaving] = useState(false)
   const [role, setRole] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const [filterType, setFilterType] = useState<string | null>(null)
  
    const [documentType, setDocumentType] = useState<string>(types[0])
    const [fileName, setFileName] = useState<string>("")
@@ -65,8 +68,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
       const u = user ? JSON.parse(user) : null
       setRole(u?.role ?? null)
     } catch {}
+    const t = searchParams.get("type")
+    if (t) {
+      setFilterType(t)
+      setDocumentType(t)
+    }
      fetchDocs()
-   }, [])
+  }, [searchParams])
  
    const fetchDocs = async () => {
      setLoading(true)
@@ -269,6 +277,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
            <CardTitle>My Documents</CardTitle>
          </CardHeader>
          <CardContent>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="space-y-2">
+              <Label>Filter by Type</Label>
+              <Select value={filterType || "ALL"} onValueChange={(v) => setFilterType(v === "ALL" ? null : v)}>
+                <SelectTrigger className="w-60">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">ALL</SelectItem>
+                  {types.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
            {loading ? (
              <div>Loading...</div>
            ) : (
@@ -285,7 +309,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
                  </TableRow>
                </TableHeader>
                <TableBody>
-                 {docs.map((d) => (
+                {(filterType ? docs.filter(d => d.documentType === filterType) : docs).map((d) => (
                    <TableRow key={d.id}>
                      <TableCell>{d.documentType}</TableCell>
                      <TableCell>{d.fileName}</TableCell>

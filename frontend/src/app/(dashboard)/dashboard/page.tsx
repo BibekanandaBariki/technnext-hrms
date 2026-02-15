@@ -31,6 +31,7 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true)
     const requiredTypes = ["GOVERNMENT_ID","TAX_ID","RESUME","PROFILE_PHOTO","BANK_PROOF","EDUCATION","EXPERIENCE","OFFER_LETTER"]
     const [docSummary, setDocSummary] = useState<{ approved: string[], pending: string[], missing: string[] }>({ approved: [], pending: [], missing: [] })
+    const [managerStats, setManagerStats] = useState<{ teamSize: number, teamPresentToday: number, teamPendingLeaves: number, teamGoalsInProgress: number, reviewsThisQuarter: number } | null>(null)
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -41,6 +42,9 @@ export default function DashboardPage() {
 
                 if (u.role === 'ADMIN' || u.role === 'HR') {
                     fetchAdminStats()
+                } else if (u.role === 'MANAGER') {
+                    fetchManagerStats()
+                    setLoading(false)
                 } else {
                     fetchEmployeeDocuments()
                     setLoading(false)
@@ -61,6 +65,15 @@ export default function DashboardPage() {
             // toast.error("Failed to load dashboard stats")
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchManagerStats = async () => {
+        try {
+            const res = await api.get('/dashboard/manager-stats')
+            setManagerStats(res.data.data)
+        } catch (error) {
+            console.error(error)
         }
     }
 
@@ -184,7 +197,7 @@ export default function DashboardPage() {
             )}
 
             {/* Employee View */}
-            {!(user?.role === 'ADMIN' || user?.role === 'HR') && (
+            {user?.role === 'EMPLOYEE' && (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card>
                         <CardHeader>
@@ -200,14 +213,33 @@ export default function DashboardPage() {
                             <CardTitle>Onboarding Checklist</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-2">
-                                <p className="text-sm">Approved: {docSummary.approved.length}</p>
-                                <p className="text-sm">Pending: {docSummary.pending.length}</p>
-                                <p className="text-sm">Missing: {docSummary.missing.length}</p>
-                                <div className="flex gap-2 mt-2">
+                            <div className="space-y-3">
+                                <div className="flex gap-2">
                                     <Button size="sm" variant="outline" onClick={fetchEmployeeDocuments}>Refresh</Button>
                                     <Button size="sm" variant="default" onClick={() => { window.location.href = '/documents' }}>Upload Documents</Button>
                                 </div>
+                                <ul className="space-y-2">
+                                    {requiredTypes.map((t) => {
+                                        const status = docSummary.approved.includes(t)
+                                            ? "Approved"
+                                            : docSummary.pending.includes(t)
+                                                ? "Pending"
+                                                : "Missing"
+                                        const color =
+                                            status === "Approved" ? "text-green-600" :
+                                            status === "Pending" ? "text-yellow-600" :
+                                            "text-red-600"
+                                        return (
+                                            <li key={t} className="flex items-center justify-between">
+                                                <span className="text-sm">{t.replace("_", " ")}</span>
+                                                <div className="flex items-center gap-3">
+                                                    <span className={`text-xs ${color}`}>{status}</span>
+                                                    <Button size="sm" variant="ghost" onClick={() => { window.location.href = `/documents?type=${t}` }}>Open</Button>
+                                                </div>
+                                            </li>
+                                        )
+                                    })}
+                                </ul>
                             </div>
                         </CardContent>
                     </Card>
@@ -218,6 +250,62 @@ export default function DashboardPage() {
                         <CardContent>
                             <p className="text-muted-foreground">View and download your payslips.</p>
                             <Button className="mt-2" variant="ghost" onClick={() => { window.location.href = '/payroll' }}>Go to Payroll</Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* Manager View */}
+            {user?.role === 'MANAGER' && (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Team Size</CardTitle>
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{managerStats?.teamSize ?? 0}</div>
+                            <p className="text-xs text-muted-foreground">Direct reports</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Present Today</CardTitle>
+                            <UserCheck className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{managerStats?.teamPresentToday ?? 0}</div>
+                            <p className="text-xs text-muted-foreground">Attendance</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Pending Leaves</CardTitle>
+                            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{managerStats?.teamPendingLeaves ?? 0}</div>
+                            <p className="text-xs text-muted-foreground">Awaiting approval</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Goals In Progress</CardTitle>
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{managerStats?.teamGoalsInProgress ?? 0}</div>
+                            <p className="text-xs text-muted-foreground">Active goals</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Reviews This Quarter</CardTitle>
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{managerStats?.reviewsThisQuarter ?? 0}</div>
+                            <p className="text-xs text-muted-foreground">Submitted</p>
                         </CardContent>
                     </Card>
                 </div>
