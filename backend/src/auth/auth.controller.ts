@@ -12,6 +12,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GetUser } from './decorators/get-user.decorator';
 import type { User } from '@prisma/client';
@@ -61,5 +62,12 @@ export class AuthController {
   ): Promise<{ valid: boolean }> {
     const isValid = await this.authService.validateResetToken(token);
     return { valid: isValid };
+  }
+
+  @Post('google-login')
+  async googleLogin(
+    @Body() dto: GoogleLoginDto,
+  ): Promise<{ access_token: string; user: Omit<User, 'passwordHash'> }> {
+    return this.authService.googleLogin(dto.idToken);
   }
 }

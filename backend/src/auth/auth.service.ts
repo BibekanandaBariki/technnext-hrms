@@ -191,4 +191,54 @@ export class AuthService {
 
     return { message: 'Password reset successfully' };
   }
+
+  async googleLogin(idToken: string) {
+    if (!idToken) {
+      throw new BadRequestException('Missing Google id_token');
+    }
+    const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
+    try {
+      const res = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(
+          idToken,
+        )}`,
+      );
+      if (!res.ok) {
+        throw new UnauthorizedException('Invalid Google token');
+      }
+      const data = (await res.json()) as {
+        email?: string;
+        aud?: string;
+        email_verified?: string;
+      };
+      if (!data.email) {
+        throw new UnauthorizedException('Google token missing email');
+      }
+      if (clientId && data.aud && data.aud !== clientId) {
+        throw new UnauthorizedException('Google token audience mismatch');
+      }
+      if (data.email_verified === 'false') {
+        throw new UnauthorizedException('Google email not verified');
+      }
+      const user = await this.usersService.findOne(data.email);
+      if (!user) {
+        throw new UnauthorizedException('No account found for this email');
+      }
+      const { passwordHash, ...safeUser } = user;
+      const payload = { email: user.email, sub: user.id, role: user.role };
+      const accessToken = this.jwtService.sign(payload);
+      return {
+        access_token: accessToken,
+        user: safeUser,
+      };
+    } catch (err) {
+      if (
+        err instanceof UnauthorizedException ||
+        err instanceof BadRequestException
+      ) {
+        throw err;
+      }
+      throw new UnauthorizedException('Failed Google login');
+    }
+  }
 }

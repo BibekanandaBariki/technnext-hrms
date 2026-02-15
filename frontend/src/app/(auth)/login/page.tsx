@@ -72,6 +72,48 @@ export default function LoginPage() {
         }
     }
 
+    async function onGoogleSignIn() {
+        try {
+            const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+            if (!clientId) {
+                toast.error("Google Sign-In not configured")
+                return
+            }
+            // Load Google Identity script if not present
+            if (!(window as unknown as { google?: unknown }).google) {
+                await new Promise<void>((resolve, reject) => {
+                    const script = document.createElement("script")
+                    script.src = "https://accounts.google.com/gsi/client"
+                    script.async = true
+                    script.onload = () => resolve()
+                    script.onerror = () => reject(new Error("Failed to load Google script"))
+                    document.head.appendChild(script)
+                })
+            }
+            const google = (window as unknown as { google: { accounts: { id: { initialize: (opts: { client_id: string, callback: (resp: { credential: string }) => void }) => void, prompt: () => void } } } }).google
+            const idToken: string = await new Promise<string>((resolve) => {
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: (resp: { credential: string }) => resolve(resp.credential),
+                })
+                google.accounts.id.prompt()
+            })
+            const response = await api.post("/auth/google-login", { idToken })
+            const { access_token, user } = response.data as { access_token: string, user: unknown }
+            localStorage.setItem("token", access_token)
+            localStorage.setItem("user", JSON.stringify(user))
+            toast.success("Signed in with Google")
+            router.push("/dashboard")
+        } catch (error) {
+            const err = error as { response?: { data?: { message?: string, error?: { message?: string } } } }
+            const message =
+                err?.response?.data?.message ||
+                err?.response?.data?.error?.message ||
+                "Google sign-in failed"
+            toast.error(message)
+        }
+    }
+
     return (
         <div className="min-h-screen flex bg-gray-50">
             {/* Clean background (removed animated gradient and orbs) */}
@@ -215,16 +257,27 @@ export default function LoginPage() {
                             </div>
                         </div>
 
+                        {/* Google Sign-In */}
+                        <Button
+                            type="button"
+                            onClick={onGoogleSignIn}
+                            variant="outline"
+                            className="w-full h-11 border-slate-300 text-slate-700 hover:bg-slate-50"
+                        >
+                            Sign in with Google
+                        </Button>
+
                         {/* Sign Up Link */}
-                        <p className="text-center text-sm text-slate-600">
-                            Don&apos;t have an account?{" "}
-                            <Link
-                                href="/signup"
-                                className="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline transition-all"
+                        <div className="text-center text-sm text-slate-600 mt-4">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                className="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline"
+                                onClick={() => toast.info("Please contact HR/Admin to request access")}
                             >
-                                Create one
-                            </Link>
-                        </p>
+                                Request Access
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Footer */}
