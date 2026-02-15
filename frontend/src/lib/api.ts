@@ -24,10 +24,19 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
+            const reqUrl = error.config?.url || '';
+            const isAuthEndpoint =
+                reqUrl.includes('/auth/login') ||
+                reqUrl.includes('/auth/register') ||
+                reqUrl.includes('/auth/forgot-password') ||
+                reqUrl.includes('/auth/reset-password');
+            if (typeof window !== 'undefined' && !isAuthEndpoint) {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                }
             }
         }
         return Promise.reject(error);
