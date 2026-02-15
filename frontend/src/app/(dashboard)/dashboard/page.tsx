@@ -1,11 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Users, UserCheck, CalendarDays, Briefcase } from "lucide-react"
 import api from "@/lib/api"
 // import { toast } from "sonner" // Removed unused toast
+
+const REQUIRED_TYPES = ["GOVERNMENT_ID","TAX_ID","RESUME","PROFILE_PHOTO","BANK_PROOF","EDUCATION","EXPERIENCE","OFFER_LETTER"]
 
 interface DashboardStats {
     totalEmployees: number
@@ -29,10 +31,51 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null)
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
-    const requiredTypes = ["GOVERNMENT_ID","TAX_ID","RESUME","PROFILE_PHOTO","BANK_PROOF","EDUCATION","EXPERIENCE","OFFER_LETTER"]
     const [docSummary, setDocSummary] = useState<{ approved: string[], pending: string[], missing: string[] }>({ approved: [], pending: [], missing: [] })
     const [managerStats, setManagerStats] = useState<{ teamSize: number, teamPresentToday: number, teamPendingLeaves: number, teamGoalsInProgress: number, reviewsThisQuarter: number } | null>(null)
     const [managerTeam, setManagerTeam] = useState<Array<{ id: string, name: string, email: string, todayStatus: string, pendingLeaves: number }>>([])
+
+    const fetchAdminStats = useCallback(async () => {
+        try {
+            const res = await api.get('/dashboard/admin-stats')
+            setStats(res.data.data)
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    const fetchManagerStats = useCallback(async () => {
+        try {
+            const res = await api.get('/dashboard/manager-stats')
+            setManagerStats(res.data.data)
+        } catch (error) {
+            console.error(error)
+        }
+    }, [])
+
+    const fetchManagerTeam = useCallback(async () => {
+        try {
+            const res = await api.get('/dashboard/manager-team')
+            setManagerTeam(res.data.data || res.data || [])
+        } catch (error) {
+            console.error(error)
+        }
+    }, [])
+
+    const fetchEmployeeDocuments = useCallback(async () => {
+        try {
+            const res = await api.get('/documents')
+            const docs: Array<{ documentType: string, status: string }> = res.data.data || []
+            const approved = docs.filter(d => d.status === 'APPROVED').map(d => d.documentType)
+            const pending = docs.filter(d => d.status === 'PENDING').map(d => d.documentType)
+            const missing = REQUIRED_TYPES.filter(t => !approved.includes(t) && !pending.includes(t))
+            setDocSummary({ approved, pending, missing })
+        } catch {
+            setDocSummary({ approved: [], pending: [], missing: REQUIRED_TYPES })
+        }
+    }, [])
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -56,50 +99,7 @@ export default function DashboardPage() {
                 window.location.href = '/login';
             }
         }
-    }, [])
-
-    const fetchAdminStats = async () => {
-        try {
-            const res = await api.get('/dashboard/admin-stats')
-            setStats(res.data.data) // Assuming wrapped in { success: true, data: ... }
-        } catch (error) {
-            console.error(error)
-            // toast.error("Failed to load dashboard stats")
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const fetchManagerStats = async () => {
-        try {
-            const res = await api.get('/dashboard/manager-stats')
-            setManagerStats(res.data.data)
-        } catch (error) {
-            console.error(error)
-        }
-    }
-
-    const fetchManagerTeam = async () => {
-        try {
-            const res = await api.get('/dashboard/manager-team')
-            setManagerTeam(res.data.data || res.data || [])
-        } catch (error) {
-            console.error(error)
-        }
-    }
-
-    const fetchEmployeeDocuments = async () => {
-        try {
-            const res = await api.get('/documents')
-            const docs: Array<{ documentType: string, status: string }> = res.data.data || []
-            const approved = docs.filter(d => d.status === 'APPROVED').map(d => d.documentType)
-            const pending = docs.filter(d => d.status === 'PENDING').map(d => d.documentType)
-            const missing = requiredTypes.filter(t => !approved.includes(t) && !pending.includes(t))
-            setDocSummary({ approved, pending, missing })
-        } catch (error) {
-            setDocSummary({ approved: [], pending: [], missing: requiredTypes })
-        }
-    }
+    }, [fetchAdminStats, fetchManagerStats, fetchManagerTeam, fetchEmployeeDocuments])
 
     return (
         <div className="space-y-6">
