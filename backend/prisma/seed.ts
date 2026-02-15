@@ -87,7 +87,9 @@ async function main() {
     const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
 
     if (!existingAdmin) {
-        const hashedPassword = await bcrypt.hash('admin123', 10);
+        const adminPassword =
+            process.env.ADMIN_DEFAULT_PASSWORD || 'admin123';
+        const hashedPassword = await bcrypt.hash(adminPassword, 10);
         const admin = await prisma.user.create({
             data: {
                 email: adminEmail,
@@ -97,7 +99,23 @@ async function main() {
         });
         console.log(`Created admin user: ${admin.email}`);
     } else {
-        console.log('Admin user already exists.');
+        const resetAdmin =
+            (process.env.ADMIN_RESET || '').toLowerCase() === 'true';
+        if (resetAdmin) {
+            const adminPassword =
+                process.env.ADMIN_DEFAULT_PASSWORD || 'admin123';
+            const hashedPassword = await bcrypt.hash(adminPassword, 10);
+            await prisma.user.update({
+                where: { id: existingAdmin.id },
+                data: {
+                    passwordHash: hashedPassword,
+                    passwordChangedAt: new Date(),
+                },
+            });
+            console.log('Admin user password reset.');
+        } else {
+            console.log('Admin user already exists.');
+        }
     }
 
     // Ensure Admin has an Employee profile for testing "My" features
