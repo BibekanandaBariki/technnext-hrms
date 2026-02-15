@@ -1,7 +1,6 @@
  "use client"
  
  import { useEffect, useState } from "react"
- import { useRouter } from "next/navigation"
  import { toast } from "sonner"
  import api from "@/lib/api"
  import { Button } from "@/components/ui/button"
@@ -42,7 +41,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
  ]
  
  export default function DocumentsPage() {
-   const router = useRouter()
    const [docs, setDocs] = useState<Document[]>([])
    const [loading, setLoading] = useState(true)
    const [saving, setSaving] = useState(false)
@@ -96,7 +94,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
        setFileSize("")
        setMimeType("")
        await fetchDocs()
-     } catch (e: unknown) {
+     } catch {
        toast.error("Failed to save document")
      } finally {
        setSaving(false)
