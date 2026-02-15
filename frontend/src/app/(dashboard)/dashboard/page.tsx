@@ -230,7 +230,7 @@ export default function DashboardPage() {
                                     <Button size="sm" variant="default" onClick={() => { window.location.href = '/documents' }}>Upload Documents</Button>
                                 </div>
                                 <ul className="space-y-2">
-                                    {requiredTypes.map((t) => {
+                                    {REQUIRED_TYPES.map((t) => {
                                         const status = docSummary.approved.includes(t)
                                             ? "Approved"
                                             : docSummary.pending.includes(t)

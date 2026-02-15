@@ -1,6 +1,6 @@
- "use client"
+"use client"
  
-import { useEffect, useState } from "react"
+ import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
  import { toast } from "sonner"
  import api from "@/lib/api"
@@ -42,7 +42,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
    "OTHER",
  ]
  
- export default function DocumentsPage() {
+function DocumentsContent() {
    const [docs, setDocs] = useState<Document[]>([])
    const [loading, setLoading] = useState(true)
    const [saving, setSaving] = useState(false)
@@ -58,12 +58,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
   const [file, setFile] = useState<File | null>(null)
   const [mode, setMode] = useState<"url" | "file">("url")
  
-   useEffect(() => {
-     const user = typeof window !== "undefined" ? localStorage.getItem("user") : null
-     if (!user) {
-       window.location.href = "/login"
-       return
-     }
+  useEffect(() => {
+    const user = typeof window !== "undefined" ? localStorage.getItem("user") : null
+    if (!user) {
+      window.location.href = "/login"
+      return
+    }
     try {
       const u = user ? JSON.parse(user) : null
       setRole(u?.role ?? null)
@@ -73,7 +73,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
       setFilterType(t)
       setDocumentType(t)
     }
-     fetchDocs()
+    fetchDocs()
   }, [searchParams])
  
    const fetchDocs = async () => {
@@ -336,3 +336,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
      </div>
    )
  }
+
+export default function DocumentsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DocumentsContent />
+    </Suspense>
+  )
+}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Plus } from "lucide-react"
@@ -28,7 +28,7 @@ interface Leave {
     status: string
 }
 
-export default function LeavesPage() {
+function LeavesContent() {
     const [leaves, setLeaves] = useState<Leave[]>([])
     const [loading, setLoading] = useState(true)
     const searchParams = useSearchParams()
@@ -136,5 +136,13 @@ export default function LeavesPage() {
                 </CardContent>
             </Card>
         </div>
+    )
+}
+
+export default function LeavesPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <LeavesContent />
+        </Suspense>
     )
 }
