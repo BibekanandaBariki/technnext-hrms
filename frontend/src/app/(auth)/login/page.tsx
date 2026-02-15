@@ -25,6 +25,9 @@ type LoginFormValues = z.infer<typeof loginSchema>
 interface ApiError {
     response?: {
         data?: {
+            error?: {
+                message?: string
+            }
             message?: string
         }
     }
@@ -59,7 +62,10 @@ export default function LoginPage() {
             router.push("/dashboard")
         } catch (error) {
             const err = error as ApiError
-            const message = err.response?.data?.message || "Invalid credentials"
+            const message =
+                err.response?.data?.error?.message ||
+                err.response?.data?.message ||
+                "Invalid credentials"
             toast.error(message)
         } finally {
             setIsLoading(false)
