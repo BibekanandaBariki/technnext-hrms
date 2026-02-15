@@ -8,7 +8,7 @@ import * as z from "zod"
 import { toast } from "sonner"
 import Link from "next/link"
 import Image from "next/image"
-import { Mail, Lock, ArrowRight, Sparkles } from "lucide-react"
+import { Mail, Lock, ArrowRight } from "lucide-react"
 
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -73,55 +73,33 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex relative overflow-hidden">
-            {/* Animated Background Gradient */}
-            <div className="fixed inset-0 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 animate-gradient-shift" />
-
-            {/* Floating Orbs */}
-            <div className="fixed top-20 left-20 w-72 h-72 bg-pink-500/30 rounded-full blur-3xl animate-float" />
-            <div className="fixed bottom-20 right-20 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl animate-float-delayed" />
-            <div className="fixed top-1/2 left-1/2 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="min-h-screen flex bg-gray-50">
+            {/* Clean background (removed animated gradient and orbs) */}
 
             {/* Left Side - Branding */}
             <div className="hidden lg:flex lg:w-1/2 p-12 flex-col justify-between relative z-10">
                 <div>
-                    <div className="mb-8 transform hover:scale-105 transition-transform duration-300">
+                    <div className="mb-8">
                         <Image
                             src="/technext-logo.png"
                             alt="Technnext Logo"
-                            width={200}
-                            height={200}
-                            className="drop-shadow-2xl"
+                            width={160}
+                            height={48}
+                            className="object-contain"
                             priority
                         />
                     </div>
-                    <div className="space-y-6">
-                        <h1 className="text-6xl font-bold text-white mb-6 leading-tight animate-fade-in">
+                    <div className="space-y-4">
+                        <h1 className="text-4xl font-bold text-slate-900 mb-2 leading-tight">
                             Welcome to<br />
-                            <span className="bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 bg-clip-text text-transparent">
-                                Technnext HRMS
-                            </span>
+                            <span className="text-slate-700">Technnext HRMS</span>
                         </h1>
-                        <p className="text-xl text-white/90 max-w-md leading-relaxed animate-fade-in-delayed">
+                        <p className="text-base text-slate-600 max-w-md">
                             Streamline your workforce management with our comprehensive HR solution.
                         </p>
-
-                        {/* Feature Pills */}
-                        <div className="flex flex-wrap gap-3 mt-8">
-                            {['Employee Management', 'Attendance Tracking', 'Leave Management', 'Payroll'].map((feature, i) => (
-                                <div
-                                    key={feature}
-                                    className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-sm font-medium hover:bg-white/20 transition-all duration-300 cursor-default animate-fade-in"
-                                    style={{ animationDelay: `${i * 100}ms` }}
-                                >
-                                    <Sparkles className="w-3 h-3 inline mr-1" />
-                                    {feature}
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </div>
-                <div className="text-white/70 text-sm">
+                <div className="text-slate-500 text-sm">
                     © 2026 Technnext. All rights reserved.
                 </div>
             </div>
@@ -141,13 +119,13 @@ export default function LoginPage() {
                         />
                     </div>
 
-                    {/* Login Card with Glass Effect */}
-                    <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 border border-white/20 transform hover:scale-[1.02] transition-all duration-300 animate-slide-up">
+                    {/* Login Card */}
+                    <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-10 border border-gray-100">
                         <div className="mb-8">
-                            <h2 className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                            <h2 className="text-3xl font-bold text-slate-900 mb-2">
                                 Sign In
                             </h2>
-                            <p className="text-gray-600">
+                            <p className="text-slate-600">
                                 Enter your credentials to access your account
                             </p>
                         </div>
@@ -155,11 +133,11 @@ export default function LoginPage() {
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                             {/* Email Field */}
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                                <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
                                     Email Address
                                 </Label>
                                 <div className="relative group">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-violet-600 transition-colors">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
                                         <Mail className="w-5 h-5" />
                                     </div>
                                     <Input
@@ -168,7 +146,7 @@ export default function LoginPage() {
                                         placeholder="you@company.com"
                                         disabled={isLoading}
                                         {...register("email")}
-                                        className="pl-10 h-12 border-2 border-gray-200 focus:border-violet-500 focus:ring-violet-500/20 rounded-xl transition-all duration-300"
+                                        className="pl-10 h-12 border-2 border-gray-200 focus:border-indigo-600 focus:ring-indigo-600/20 rounded-xl transition-all duration-300"
                                     />
                                 </div>
                                 {errors.email && (
@@ -179,18 +157,18 @@ export default function LoginPage() {
                             {/* Password Field */}
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
+                                    <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
                                         Password
                                     </Label>
                                     <Link
                                         href="/forgot-password"
-                                        className="text-sm text-violet-600 hover:text-violet-700 font-medium hover:underline transition-all"
+                                        className="text-sm text-indigo-600 hover:text-indigo-700 font-medium hover:underline transition-all"
                                     >
                                         Forgot password?
                                     </Link>
                                 </div>
                                 <div className="relative group">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-violet-600 transition-colors">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
                                         <Lock className="w-5 h-5" />
                                     </div>
                                     <Input
@@ -199,7 +177,7 @@ export default function LoginPage() {
                                         placeholder="Enter your password"
                                         disabled={isLoading}
                                         {...register("password")}
-                                        className="pl-10 h-12 border-2 border-gray-200 focus:border-violet-500 focus:ring-violet-500/20 rounded-xl transition-all duration-300"
+                                        className="pl-10 h-12 border-2 border-gray-200 focus:border-indigo-600 focus:ring-indigo-600/20 rounded-xl transition-all duration-300"
                                     />
                                 </div>
                                 {errors.password && (
@@ -211,7 +189,7 @@ export default function LoginPage() {
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full h-12 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-700 hover:via-purple-700 hover:to-indigo-700 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300"
+                                className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-base rounded-xl shadow-md transition-all"
                             >
                                 {isLoading ? (
                                     <span className="flex items-center justify-center gap-2">
@@ -221,7 +199,7 @@ export default function LoginPage() {
                                 ) : (
                                     <span className="flex items-center justify-center gap-2">
                                         Sign In
-                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                        <ArrowRight className="w-5 h-5" />
                                     </span>
                                 )}
                             </Button>
@@ -238,11 +216,11 @@ export default function LoginPage() {
                         </div>
 
                         {/* Sign Up Link */}
-                        <p className="text-center text-sm text-gray-600">
+                        <p className="text-center text-sm text-slate-600">
                             Don&apos;t have an account?{" "}
                             <Link
                                 href="/signup"
-                                className="text-violet-600 hover:text-violet-700 font-semibold hover:underline transition-all"
+                                className="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline transition-all"
                             >
                                 Create one
                             </Link>
@@ -250,66 +228,13 @@ export default function LoginPage() {
                     </div>
 
                     {/* Footer */}
-                    <p className="text-center mt-8 text-sm text-white/80 font-medium">
+                    <p className="text-center mt-8 text-sm text-slate-500 font-medium">
                         🔒 Secured by Technnext HRMS
                     </p>
                 </div>
             </div>
 
-            <style jsx global>{`
-                @keyframes gradient-shift {
-                    0%, 100% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                }
-                @keyframes float {
-                    0%, 100% { transform: translateY(0px); }
-                    50% { transform: translateY(-20px); }
-                }
-                @keyframes float-delayed {
-                    0%, 100% { transform: translateY(0px); }
-                    50% { transform: translateY(20px); }
-                }
-                @keyframes fade-in {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes fade-in-delayed {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes slide-up {
-                    from { opacity: 0; transform: translateY(30px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes shake {
-                    0%, 100% { transform: translateX(0); }
-                    25% { transform: translateX(-5px); }
-                    75% { transform: translateX(5px); }
-                }
-                .animate-gradient-shift {
-                    background-size: 200% 200%;
-                    animation: gradient-shift 15s ease infinite;
-                }
-                .animate-float {
-                    animation: float 6s ease-in-out infinite;
-                }
-                .animate-float-delayed {
-                    animation: float-delayed 8s ease-in-out infinite;
-                }
-                .animate-fade-in {
-                    animation: fade-in 0.8s ease-out forwards;
-                }
-                .animate-fade-in-delayed {
-                    animation: fade-in-delayed 1s ease-out 0.2s forwards;
-                    opacity: 0;
-                }
-                .animate-slide-up {
-                    animation: slide-up 0.6s ease-out forwards;
-                }
-                .animate-shake {
-                    animation: shake 0.3s ease-in-out;
-                }
-            `}</style>
+            {/* Removed animated background and effects for a cleaner professional look */}
         </div>
     )
 }
