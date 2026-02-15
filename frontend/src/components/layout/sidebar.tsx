@@ -54,7 +54,21 @@ const sidebarItems = [
 
 export function Sidebar() {
     const pathname = usePathname()
-    // const user = JSON.parse(localStorage.getItem('user') || '{}'); // Better to use context
+    let role: string | null = null
+    if (typeof window !== "undefined") {
+        try {
+            const u = localStorage.getItem("user")
+            if (u) {
+                role = JSON.parse(u)?.role ?? null
+            }
+        } catch {
+            role = null
+        }
+    }
+    const filteredItems = sidebarItems.filter((item) => {
+        if (!item.roles || item.roles.length === 0) return true
+        return role ? item.roles.includes(role) : false
+    })
 
     return (
         <div className="flex h-full flex-col border-r bg-card">
@@ -62,14 +76,14 @@ export function Sidebar() {
                 <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
                     {/* <LayoutDashboard className="h-6 w-6" /> */}
                     {/* <span>Technnext HRMS</span> */}
-                    <div className="relative h-10 w-auto aspect-[3/1]">
-                        <Image src="/logo.png" alt="Technnext HRMS" fill className="object-contain" />
+                    <div className="relative h-10 w-36">
+                        <Image src="/technnext-logo.png" alt="Technnext HRMS" fill className="object-contain" />
                     </div>
                 </Link>
             </div>
             <div className="flex-1 overflow-auto py-4">
                 <nav className="grid gap-1 px-2">
-                    {sidebarItems.map((item, index) => {
+                    {filteredItems.map((item, index) => {
                         const Icon = item.icon
                         return (
                             <Link
