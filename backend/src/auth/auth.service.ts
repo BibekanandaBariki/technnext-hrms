@@ -246,25 +246,91 @@ export class AuthService {
     updated: number;
     sessionsDeleted: number;
   }> {
-    const randomPlain = crypto.randomBytes(48).toString('hex');
-    const hashed = await bcrypt.hash(randomPlain, 10);
     const nonAdminUsers = await this.prisma.user.findMany({
       where: { role: { not: 'ADMIN' } },
       select: { id: true },
     });
-    const ids = nonAdminUsers.map((u) => u.id);
-    const del = await this.prisma.session.deleteMany({
-      where: { userId: { in: ids } },
+    const userIds = nonAdminUsers.map((u) => u.id);
+    const employees = await this.prisma.employee.findMany({
+      where: { userId: { in: userIds } },
+      select: { id: true },
     });
-    const upd = await this.prisma.user.updateMany({
-      where: { role: { not: 'ADMIN' } },
-      data: {
-        isActive: false,
-        emailVerified: false,
-        passwordHash: hashed,
-        passwordChangedAt: new Date(),
-      },
+    const employeeIds = employees.map((e) => e.id);
+
+    const counts = await this.prisma.$transaction(async (prisma) => {
+      const payslips = await prisma.payslip.deleteMany({
+        where: { payrollRecord: { is: { employeeId: { in: employeeIds } } } },
+      });
+      const payroll = await prisma.payrollRecord.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      const salary = await prisma.salaryStructure.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      const attendance = await prisma.attendance.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      const leaves = await prisma.leave.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      const leaveBalances = await prisma.leaveBalance.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      const docs = await prisma.employeeDocument.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      const goals = await prisma.goal.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      const reviews = await prisma.performanceReview.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      const probation = await prisma.probationReview.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      const taxes = await prisma.taxDeclaration.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      const employeesDeleted = await prisma.employee.deleteMany({
+        where: { id: { in: employeeIds } },
+      });
+
+      const sessions = await prisma.session.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+      const passwords = await prisma.passwordHistory.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+      const audits = await prisma.auditLog.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+      const usersDeleted = await prisma.user.deleteMany({
+        where: { id: { in: userIds } },
+      });
+
+      return {
+        payslipsDeleted: payslips.count,
+        payrollDeleted: payroll.count,
+        salaryDeleted: salary.count,
+        attendanceDeleted: attendance.count,
+        leavesDeleted: leaves.count,
+        leaveBalancesDeleted: leaveBalances.count,
+        docsDeleted: docs.count,
+        goalsDeleted: goals.count,
+        reviewsDeleted: reviews.count,
+        probationDeleted: probation.count,
+        taxesDeleted: taxes.count,
+        employeesDeleted: employeesDeleted.count,
+        sessionsDeleted: sessions.count,
+        passwordsDeleted: passwords.count,
+        auditsDeleted: audits.count,
+        usersDeleted: usersDeleted.count,
+      };
     });
-    return { updated: upd.count, sessionsDeleted: del.count };
+
+    return {
+      updated: counts.usersDeleted,
+      sessionsDeleted: counts.sessionsDeleted,
+    };
   }
 }
