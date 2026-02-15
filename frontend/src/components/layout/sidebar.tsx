@@ -45,6 +45,11 @@ const sidebarItems = [
         href: "/tax",
         icon: FileText,
     },
+    {
+        title: "Documents",
+        href: "/documents",
+        icon: FileText,
+    },
 ]
 
 export function Sidebar() {

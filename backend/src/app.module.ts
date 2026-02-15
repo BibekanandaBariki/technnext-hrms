@@ -12,6 +12,7 @@ import { TaxModule } from './tax/tax.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { DesignationsModule } from './designations/designations.module';
+import { DocumentsModule } from './documents/documents.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -34,6 +35,7 @@ import { AppService } from './app.service';
     DashboardModule,
     DepartmentsModule,
     DesignationsModule,
+    DocumentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
