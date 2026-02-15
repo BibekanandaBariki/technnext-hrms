@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
    mimeType: string
    status: string
    uploadedAt: string
+  comments?: string
  }
  
  const types = [
@@ -44,6 +45,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
    const [docs, setDocs] = useState<Document[]>([])
    const [loading, setLoading] = useState(true)
    const [saving, setSaving] = useState(false)
+  const [role, setRole] = useState<string | null>(null)
  
    const [documentType, setDocumentType] = useState<string>(types[0])
    const [fileName, setFileName] = useState<string>("")
@@ -59,6 +61,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
        window.location.href = "/login"
        return
      }
+    try {
+      const u = user ? JSON.parse(user) : null
+      setRole(u?.role ?? null)
+    } catch {}
      fetchDocs()
    }, [])
  
@@ -130,6 +136,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
       await fetchDocs()
     } catch {
       toast.error("Upload failed")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const review = async (id: string, nextStatus: "APPROVED" | "REJECTED") => {
+    const comments = window.prompt("Comments (optional)") || ""
+    setSaving(true)
+    try {
+      await api.patch(`/documents/${id}/review`, {
+        status: nextStatus,
+        comments,
+      })
+      toast.success(`Marked ${nextStatus.toLowerCase()}`)
+      await fetchDocs()
+    } catch {
+      toast.error("Failed to update status")
     } finally {
       setSaving(false)
     }
@@ -273,6 +296,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
                      <TableCell>{d.mimeType}</TableCell>
                      <TableCell>{d.status}</TableCell>
                      <TableCell>{new Date(d.uploadedAt).toLocaleString()}</TableCell>
+                    {(role === "ADMIN" || role === "HR") && (
+                      <TableCell className="text-right space-x-2">
+                        <Button size="sm" variant="outline" onClick={() => review(d.id, "APPROVED")} disabled={saving}>Approve</Button>
+                        <Button size="sm" variant="outline" onClick={() => review(d.id, "REJECTED")} disabled={saving}>Reject</Button>
+                      </TableCell>
+                    )}
                    </TableRow>
                  ))}
                </TableBody>

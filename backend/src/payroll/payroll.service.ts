@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSalaryStructureDto } from './dto/create-salary-structure.dto';
-import { PayrollStatus } from '@prisma/client';
+import { PayrollStatus, DocumentType, DocumentStatus } from '@prisma/client';
 
 @Injectable()
 export class PayrollService {
@@ -38,16 +38,32 @@ export class PayrollService {
   }
 
   async processPayrollForMonth(year: number, month: number, adminId: string) {
-    // 1. Get all active employees
     const employees = await this.prisma.employee.findMany({
       where: { status: 'ACTIVE' },
-      include: { salaryStructure: true, attendance: true }, // Need efficient way to filter attendance for the month
+      include: { salaryStructure: true, attendance: true, documents: true },
     });
 
     const results = [];
 
     for (const emp of employees) {
       if (!emp.salaryStructure) continue; // Skip if no salary structure
+      const required: DocumentType[] = [
+        DocumentType.GOVERNMENT_ID,
+        DocumentType.TAX_ID,
+        DocumentType.RESUME,
+        DocumentType.PROFILE_PHOTO,
+        DocumentType.BANK_PROOF,
+        DocumentType.EDUCATION,
+        DocumentType.EXPERIENCE,
+        DocumentType.OFFER_LETTER,
+      ];
+      const typesApproved = new Set(
+        emp.documents
+          .filter((d) => d.status === DocumentStatus.APPROVED)
+          .map((d) => d.documentType),
+      );
+      const allApproved = required.every((t) => typesApproved.has(t));
+      if (!allApproved) continue;
 
       // Simple logic: Full salary for now.
       // Real logic needs LOP (Loss of Pay) calculation based on attendance.

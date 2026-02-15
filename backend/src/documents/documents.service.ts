@@ -54,6 +54,14 @@ export class DocumentsService {
     if (!employee) {
       throw new NotFoundException('Employee profile not found');
     }
+    const allowedMime = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (!allowedMime.includes(dto.mimeType)) {
+      throw new Error('Unsupported file type');
+    }
+    const maxSize = 10 * 1024 * 1024;
+    if (dto.fileSize > maxSize) {
+      throw new Error('File too large');
+    }
     return this.prisma.employeeDocument.create({
       data: {
         employeeId: employee.id,
@@ -87,5 +95,56 @@ export class DocumentsService {
     const uploadUrl = await getSignedUrl(this.s3, command, { expiresIn: 900 });
     const fileUrl = `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
     return { uploadUrl, fileUrl, key };
+  }
+
+  async reviewDocument(
+    documentId: string,
+    reviewerId: string,
+    status: DocumentStatus,
+    comments?: string,
+  ) {
+    const doc = await this.prisma.employeeDocument.findUnique({
+      where: { id: documentId },
+    });
+    if (!doc) throw new NotFoundException('Document not found');
+    const updated = await this.prisma.employeeDocument.update({
+      where: { id: documentId },
+      data: {
+        status,
+        reviewedAt: new Date(),
+        reviewedBy: reviewerId,
+        comments,
+      },
+    });
+    await this.evaluateOnboardingCompletion(updated.employeeId);
+    return updated;
+  }
+
+  private async evaluateOnboardingCompletion(employeeId: string) {
+    const required: DocumentType[] = [
+      'GOVERNMENT_ID',
+      'TAX_ID',
+      'RESUME',
+      'PROFILE_PHOTO',
+      'BANK_PROOF',
+      'EDUCATION',
+      'EXPERIENCE',
+      'OFFER_LETTER',
+    ] as unknown as DocumentType[];
+    const docs = await this.prisma.employeeDocument.findMany({
+      where: { employeeId, documentType: { in: required } },
+    });
+    const typesApproved = new Set(
+      docs
+        .filter((d) => d.status === DocumentStatus.APPROVED)
+        .map((d) => d.documentType),
+    );
+    const allApproved = required.every((t) => typesApproved.has(t));
+    if (allApproved) {
+      await this.prisma.employee.update({
+        where: { id: employeeId },
+        data: { status: 'ACTIVE' },
+      });
+    }
   }
 }
