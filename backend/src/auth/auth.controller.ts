@@ -14,6 +14,8 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { Roles } from './decorators/roles.decorator';
 import { GetUser } from './decorators/get-user.decorator';
 import type { User } from '@prisma/client';
 
@@ -69,5 +71,12 @@ export class AuthController {
     @Body() dto: GoogleLoginDto,
   ): Promise<{ access_token: string; user: Omit<User, 'passwordHash'> }> {
     return this.authService.googleLogin(dto.idToken);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @Post('purge-users')
+  async purgeUsers(): Promise<{ updated: number; sessionsDeleted: number }> {
+    return this.authService.purgeNonAdminCredentials();
   }
 }

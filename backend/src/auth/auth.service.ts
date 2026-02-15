@@ -241,4 +241,30 @@ export class AuthService {
       throw new UnauthorizedException('Failed Google login');
     }
   }
+
+  async purgeNonAdminCredentials(): Promise<{
+    updated: number;
+    sessionsDeleted: number;
+  }> {
+    const randomPlain = crypto.randomBytes(48).toString('hex');
+    const hashed = await bcrypt.hash(randomPlain, 10);
+    const nonAdminUsers = await this.prisma.user.findMany({
+      where: { role: { not: 'ADMIN' } },
+      select: { id: true },
+    });
+    const ids = nonAdminUsers.map((u) => u.id);
+    const del = await this.prisma.session.deleteMany({
+      where: { userId: { in: ids } },
+    });
+    const upd = await this.prisma.user.updateMany({
+      where: { role: { not: 'ADMIN' } },
+      data: {
+        isActive: false,
+        emailVerified: false,
+        passwordHash: hashed,
+        passwordChangedAt: new Date(),
+      },
+    });
+    return { updated: upd.count, sessionsDeleted: del.count };
+  }
 }
