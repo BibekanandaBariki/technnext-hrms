@@ -82,7 +82,18 @@ export class EmployeesService {
 
     // Send onboarding email OUTSIDE the transaction
     // In dev environment, this will log to console
-    const loginLink = process.env.FRONTEND_URL || 'http://localhost:3000/login';
+    let loginLink = 'http://localhost:3000/login';
+    const frontendUrl = process.env.FRONTEND_URL;
+    if (frontendUrl) {
+      try {
+        const base = new URL(frontendUrl);
+        // Ensure path to /login
+        loginLink = new URL('/login', base).toString();
+      } catch {
+        // keep default if invalid FRONTEND_URL
+        loginLink = 'http://localhost:3000/login';
+      }
+    }
     try {
       // We use the password generated above
       await this.emailService.sendOnboardingEmail(
@@ -130,7 +141,16 @@ export class EmployeesService {
       data: { passwordHash: hashedPassword },
     });
 
-    const loginLink = process.env.FRONTEND_URL || 'http://localhost:3000/login';
+    let loginLink = 'http://localhost:3000/login';
+    const frontendUrl = process.env.FRONTEND_URL;
+    if (frontendUrl) {
+      try {
+        const base = new URL(frontendUrl);
+        loginLink = new URL('/login', base).toString();
+      } catch {
+        loginLink = 'http://localhost:3000/login';
+      }
+    }
 
     try {
       await this.emailService.sendOnboardingEmail(
