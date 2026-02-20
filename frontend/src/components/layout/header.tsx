@@ -17,6 +17,7 @@ export function Header() {
             const stored = localStorage.getItem('user')
             if (stored && stored !== 'undefined') {
                 try {
+                    // eslint-disable-next-line react-hooks/set-state-in-effect
                     setUser(JSON.parse(stored))
                 } catch (e) {
                     console.error("Failed to parse user", e)
