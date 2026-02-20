@@ -47,6 +47,21 @@ export class DocumentsService {
     });
   }
 
+  async findAllDocs() {
+    return this.prisma.employeeDocument.findMany({
+      include: {
+        employee: {
+          select: {
+            firstName: true,
+            lastName: true,
+            employeeCode: true
+          }
+        }
+      },
+      orderBy: { uploadedAt: 'desc' },
+    });
+  }
+
   async createForUser(userId: string, dto: CreateDocumentDto) {
     const employee = await this.prisma.employee.findUnique({
       where: { userId },

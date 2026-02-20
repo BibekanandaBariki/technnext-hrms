@@ -28,6 +28,11 @@ type Document = {
   status: string
   uploadedAt: string
   comments?: string
+  employee?: {
+    firstName: string
+    lastName: string
+    employeeCode: string
+  }
 }
 
 const types = [
@@ -60,27 +65,31 @@ function DocumentsContent() {
 
   useEffect(() => {
     const user = typeof window !== "undefined" ? localStorage.getItem("user") : null
+    let tempRole = null
     if (!user || user === "undefined") {
       window.location.href = "/login"
       return
     }
     try {
       const u = (user && user !== "undefined") ? JSON.parse(user) : null
-      setRole(u?.role ?? null)
+      tempRole = u?.role ?? null
+      setRole(tempRole)
     } catch { }
     const t = searchParams.get("type")
     if (t) {
       setFilterType(t)
       setDocumentType(t)
     }
-    fetchDocs()
+    fetchDocs(tempRole)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
-  const fetchDocs = async () => {
+  const fetchDocs = async (currentRole: string | null) => {
     setLoading(true)
     try {
-      const res = await api.get("/documents")
-      setDocs(res.data.data || [])
+      const endpoint = (currentRole === "ADMIN" || currentRole === "HR") ? "/documents/all" : "/documents"
+      const res = await api.get(endpoint)
+      setDocs(res.data.data || res.data || [])
     } catch {
       toast.error("Failed to load documents")
     } finally {
@@ -107,7 +116,7 @@ function DocumentsContent() {
       setFileUrl("")
       setFileSize("")
       setMimeType("")
-      await fetchDocs()
+      await fetchDocs(role)
     } catch {
       toast.error("Failed to save document")
     } finally {
@@ -141,7 +150,7 @@ function DocumentsContent() {
       })
       toast.success("Uploaded and saved")
       setFile(null)
-      await fetchDocs()
+      await fetchDocs(role)
     } catch {
       toast.error("Upload failed")
     } finally {
@@ -158,7 +167,7 @@ function DocumentsContent() {
         comments,
       })
       toast.success(`Marked ${nextStatus.toLowerCase()}`)
-      await fetchDocs()
+      await fetchDocs(role)
     } catch {
       toast.error("Failed to update status")
     } finally {
@@ -237,44 +246,12 @@ function DocumentsContent() {
               <Button onClick={uploadFile} disabled={saving}>{saving ? "Uploading..." : "Upload"}</Button>
             </div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <Select value={documentType} onValueChange={setDocumentType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {types.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>File Name</Label>
-              <Input value={fileName} onChange={(e) => setFileName(e.target.value)} placeholder="filename.pdf" />
-            </div>
-            <div className="space-y-2">
-              <Label>File URL</Label>
-              <Input value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." />
-            </div>
-            <div className="space-y-2">
-              <Label>File Size (bytes)</Label>
-              <Input value={fileSize} onChange={(e) => setFileSize(e.target.value)} placeholder="12345" />
-            </div>
-            <div className="space-y-2">
-              <Label>Mime Type</Label>
-              <Input value={mimeType} onChange={(e) => setMimeType(e.target.value)} placeholder="application/pdf" />
-            </div>
-          </div>
-
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>My Documents</CardTitle>
+          <CardTitle>{(role === "ADMIN" || role === "HR") ? "All Documents" : "My Documents"}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
@@ -299,6 +276,7 @@ function DocumentsContent() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  {(role === "ADMIN" || role === "HR") && <TableHead>Employee</TableHead>}
                   <TableHead>Type</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>URL</TableHead>
@@ -311,6 +289,11 @@ function DocumentsContent() {
               <TableBody>
                 {(filterType ? docs.filter(d => d.documentType === filterType) : docs).map((d) => (
                   <TableRow key={d.id}>
+                    {(role === "ADMIN" || role === "HR") && (
+                      <TableCell>
+                        {d.employee ? `${d.employee.firstName} ${d.employee.lastName} (${d.employee.employeeCode})` : "Unknown"}
+                      </TableCell>
+                    )}
                     <TableCell>{d.documentType}</TableCell>
                     <TableCell>{d.fileName}</TableCell>
                     <TableCell>

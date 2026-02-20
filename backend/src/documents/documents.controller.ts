@@ -24,11 +24,17 @@ interface RequestUser {
 @Controller('documents')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DocumentsController {
-  constructor(private readonly documentsService: DocumentsService) {}
+  constructor(private readonly documentsService: DocumentsService) { }
 
   @Get()
   list(@GetUser() user: RequestUser) {
     return this.documentsService.listForUser(user.id);
+  }
+
+  @Get('all')
+  @Roles(Role.HR, Role.ADMIN)
+  listAll() {
+    return this.documentsService.findAllDocs();
   }
 
   @Post()

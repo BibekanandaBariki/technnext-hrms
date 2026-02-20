@@ -30,6 +30,7 @@ const employeeSchema = z.object({
     departmentId: z.string().optional(),
     designationId: z.string().optional(),
     employmentType: z.enum(["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"]).optional(),
+    status: z.enum(['ONBOARDING', 'ACTIVE', 'ON_PROBATION', 'CONFIRMED', 'NOTICE_PERIOD', 'RESIGNED', 'TERMINATED', 'INACTIVE']).optional(),
 })
 
 type EmployeeFormValues = z.infer<typeof employeeSchema>
@@ -48,6 +49,7 @@ export default function EditEmployeePage() {
         formState: { errors },
         setValue,
         reset,
+        getValues,
     } = useForm<EmployeeFormValues>({
         resolver: zodResolver(employeeSchema),
     })
@@ -78,6 +80,7 @@ export default function EditEmployeePage() {
                         departmentId: emp.departmentId,
                         designationId: emp.designationId,
                         employmentType: emp.employmentType,
+                        status: emp.status,
                     })
                 }
             } catch (error) {
@@ -264,19 +267,45 @@ export default function EditEmployeePage() {
                                     <p className="text-sm text-red-500">{errors.joiningDate.message}</p>
                                 )}
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="employmentType">Employment Type</Label>
-                                <Select onValueChange={(val) => setValue("employmentType", val as "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERN")}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select Type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="FULL_TIME">Full Time</SelectItem>
-                                        <SelectItem value="PART_TIME">Part Time</SelectItem>
-                                        <SelectItem value="CONTRACT">Contract</SelectItem>
-                                        <SelectItem value="INTERN">Intern</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="employmentType">Employment Type</Label>
+                                    <Select
+                                        defaultValue={getValues("employmentType")}
+                                        onValueChange={(val) => setValue("employmentType", val as "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERN")}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="FULL_TIME">Full Time</SelectItem>
+                                            <SelectItem value="PART_TIME">Part Time</SelectItem>
+                                            <SelectItem value="CONTRACT">Contract</SelectItem>
+                                            <SelectItem value="INTERN">Intern</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="status">Status</Label>
+                                    <Select
+                                        defaultValue={getValues("status")}
+                                        onValueChange={(val) => setValue("status", val as any)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ONBOARDING">Onboarding</SelectItem>
+                                            <SelectItem value="ACTIVE">Active</SelectItem>
+                                            <SelectItem value="ON_PROBATION">On Probation</SelectItem>
+                                            <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                                            <SelectItem value="NOTICE_PERIOD">Notice Period</SelectItem>
+                                            <SelectItem value="RESIGNED">Resigned</SelectItem>
+                                            <SelectItem value="TERMINATED">Terminated</SelectItem>
+                                            <SelectItem value="INACTIVE">Inactive</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                         </div>
 

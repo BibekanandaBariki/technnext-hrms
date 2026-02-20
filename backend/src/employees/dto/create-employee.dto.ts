@@ -42,5 +42,7 @@ export class CreateEmployeeDto {
   @IsString()
   reportingManagerId?: string;
 
-  // Add other fields as necessary based on schema
+  @IsOptional()
+  @IsEnum(['ONBOARDING', 'ACTIVE', 'ON_PROBATION', 'CONFIRMED', 'NOTICE_PERIOD', 'RESIGNED', 'TERMINATED', 'INACTIVE'])
+  status?: 'ONBOARDING' | 'ACTIVE' | 'ON_PROBATION' | 'CONFIRMED' | 'NOTICE_PERIOD' | 'RESIGNED' | 'TERMINATED' | 'INACTIVE';
 }
