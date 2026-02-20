@@ -115,13 +115,40 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex bg-gray-50">
-            {/* Clean background (removed animated gradient and orbs) */}
-
-            {/* Left Side - Branding */}
-            <div className="hidden lg:flex lg:w-1/2 p-12 flex-col justify-between relative z-10">
+        <div className="min-h-screen flex bg-slate-50 font-sans">
+            {/* Left Side - Branding / White Background */}
+            <div className="hidden lg:flex lg:w-[45%] xl:w-1/2 bg-white p-12 xl:p-20 flex-col justify-between relative z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
                 <div>
-                    <div className="mb-8">
+                    <div className="mb-12">
+                        <Image
+                            src="/technext-logo.png"
+                            alt="Technnext Logo"
+                            width={180}
+                            height={54}
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
+                    <div className="space-y-6">
+                        <h1 className="text-4xl xl:text-5xl font-extrabold text-slate-900 leading-[1.15] tracking-tight">
+                            Welcome to<br />
+                            Technnext HRMS
+                        </h1>
+                        <p className="text-lg text-slate-600 max-w-md leading-relaxed font-medium">
+                            Streamline your workforce management with our comprehensive HR solution.
+                        </p>
+                    </div>
+                </div>
+                <div className="text-slate-500 font-medium text-sm">
+                    © 2026 Technnext. All rights reserved.
+                </div>
+            </div>
+
+            {/* Right Side - Login Form / Light Gray Background */}
+            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 relative z-10">
+                <div className="w-full max-w-[440px]">
+                    {/* Mobile Logo */}
+                    <div className="lg:hidden flex justify-center mb-10">
                         <Image
                             src="/technext-logo.png"
                             alt="Technnext Logo"
@@ -131,56 +158,27 @@ export default function LoginPage() {
                             priority
                         />
                     </div>
-                    <div className="space-y-4">
-                        <h1 className="text-4xl font-bold text-slate-900 mb-2 leading-tight">
-                            Welcome to<br />
-                            <span className="text-slate-700">Technnext HRMS</span>
-                        </h1>
-                        <p className="text-base text-slate-600 max-w-md">
-                            Streamline your workforce management with our comprehensive HR solution.
-                        </p>
-                    </div>
-                </div>
-                <div className="text-slate-500 text-sm">
-                    © 2026 Technnext. All rights reserved.
-                </div>
-            </div>
-
-            {/* Right Side - Login Form */}
-            <div className="flex-1 flex items-center justify-center p-8 relative z-10">
-                <div className="w-full max-w-md">
-                    {/* Mobile Logo */}
-                    <div className="lg:hidden flex justify-center mb-8 animate-fade-in">
-                        <Image
-                            src="/technext-logo.png"
-                            alt="Technnext Logo"
-                            width={140}
-                            height={140}
-                            className="drop-shadow-2xl transform hover:scale-105 transition-transform duration-300"
-                            priority
-                        />
-                    </div>
 
                     {/* Login Card */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-10 border border-gray-100">
+                    <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:p-10 p-8">
                         <div className="mb-8">
-                            <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 tracking-tight">
                                 Sign In
                             </h2>
-                            <p className="text-slate-600">
+                            <p className="text-slate-500 font-medium text-sm sm:text-base">
                                 Enter your credentials to access your account
                             </p>
                         </div>
 
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                             {/* Email Field */}
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="email" className="text-sm font-semibold text-slate-800">
                                     Email Address
                                 </Label>
                                 <div className="relative group">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
-                                        <Mail className="w-5 h-5" />
+                                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                                        <Mail className="w-[18px] h-[18px]" />
                                     </div>
                                     <Input
                                         id="email"
@@ -188,30 +186,30 @@ export default function LoginPage() {
                                         placeholder="you@company.com"
                                         disabled={isLoading}
                                         {...register("email")}
-                                        className="pl-10 h-12 border-2 border-gray-200 focus:border-indigo-600 focus:ring-indigo-600/20 rounded-xl transition-all duration-300"
+                                        className="pl-10 h-11 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl transition-all font-medium bg-transparent"
                                     />
                                 </div>
                                 {errors.email && (
-                                    <p className="text-sm text-red-600 animate-shake">{errors.email.message}</p>
+                                    <p className="text-sm text-red-500 font-medium mt-1 animate-shake">{errors.email.message}</p>
                                 )}
                             </div>
 
                             {/* Password Field */}
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                                    <Label htmlFor="password" className="text-sm font-semibold text-slate-800">
                                         Password
                                     </Label>
                                     <Link
                                         href="/forgot-password"
-                                        className="text-sm text-indigo-600 hover:text-indigo-700 font-medium hover:underline transition-all"
+                                        className="text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
                                     >
                                         Forgot password?
                                     </Link>
                                 </div>
                                 <div className="relative group">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
-                                        <Lock className="w-5 h-5" />
+                                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                                        <Lock className="w-[18px] h-[18px]" />
                                     </div>
                                     <Input
                                         id="password"
@@ -219,41 +217,43 @@ export default function LoginPage() {
                                         placeholder="Enter your password"
                                         disabled={isLoading}
                                         {...register("password")}
-                                        className="pl-10 h-12 border-2 border-gray-200 focus:border-indigo-600 focus:ring-indigo-600/20 rounded-xl transition-all duration-300"
+                                        className="pl-10 h-11 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl transition-all font-medium bg-transparent"
                                     />
                                 </div>
                                 {errors.password && (
-                                    <p className="text-sm text-red-600 animate-shake">{errors.password.message}</p>
+                                    <p className="text-sm text-red-500 font-medium mt-1 animate-shake">{errors.password.message}</p>
                                 )}
                             </div>
 
                             {/* Submit Button */}
-                            <Button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-base rounded-xl shadow-md transition-all"
-                            >
-                                {isLoading ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        Signing in...
-                                    </span>
-                                ) : (
-                                    <span className="flex items-center justify-center gap-2">
-                                        Sign In
-                                        <ArrowRight className="w-5 h-5" />
-                                    </span>
-                                )}
-                            </Button>
+                            <div className="pt-2">
+                                <Button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[15px] rounded-xl shadow-sm transition-all"
+                                >
+                                    {isLoading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Signing in...
+                                        </span>
+                                    ) : (
+                                        <span className="flex items-center justify-center gap-2">
+                                            Sign In
+                                            <ArrowRight className="w-4 h-4" />
+                                        </span>
+                                    )}
+                                </Button>
+                            </div>
                         </form>
 
                         {/* Divider */}
-                        <div className="relative my-8">
+                        <div className="relative my-7">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-200"></div>
+                                <div className="w-full border-t border-slate-200"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-4 bg-white text-gray-500 font-medium">or</span>
+                                <span className="px-4 bg-white text-slate-400 font-medium">or</span>
                             </div>
                         </div>
 
@@ -262,17 +262,17 @@ export default function LoginPage() {
                             type="button"
                             onClick={onGoogleSignIn}
                             variant="outline"
-                            className="w-full h-11 border-slate-300 text-slate-700 hover:bg-slate-50"
+                            className="w-full h-11 border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all shadow-sm"
                         >
                             Sign in with Google
                         </Button>
 
                         {/* Sign Up Link */}
-                        <div className="text-center text-sm text-slate-600 mt-4">
+                        <div className="text-center mt-6">
                             <Button
                                 type="button"
                                 variant="ghost"
-                                className="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline"
+                                className="text-indigo-600 hover:text-indigo-700 font-bold hover:bg-transparent px-0"
                                 onClick={() => toast.info("Please contact HR/Admin to request access")}
                             >
                                 Request Access
@@ -281,13 +281,14 @@ export default function LoginPage() {
                     </div>
 
                     {/* Footer */}
-                    <p className="text-center mt-8 text-sm text-slate-500 font-medium">
-                        🔒 Secured by Technnext HRMS
-                    </p>
+                    <div className="text-center mt-8">
+                        <p className="text-sm text-slate-500 font-semibold flex items-center justify-center gap-1.5">
+                            <Lock className="w-3.5 h-3.5 text-slate-400" />
+                            Secured by Technnext HRMS
+                        </p>
+                    </div>
                 </div>
             </div>
-
-            {/* Removed animated background and effects for a cleaner professional look */}
         </div>
     )
 }
