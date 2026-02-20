@@ -289,7 +289,7 @@ export default function EditEmployeePage() {
                                     <Label htmlFor="status">Status</Label>
                                     <Select
                                         defaultValue={getValues("status")}
-                                        onValueChange={(val) => setValue("status", val as any)}
+                                        onValueChange={(val) => setValue("status", val as 'ONBOARDING' | 'ACTIVE' | 'ON_PROBATION' | 'CONFIRMED' | 'NOTICE_PERIOD' | 'RESIGNED' | 'TERMINATED' | 'INACTIVE')}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select Status" />

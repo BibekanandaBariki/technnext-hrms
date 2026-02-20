@@ -81,7 +81,6 @@ function DocumentsContent() {
       setDocumentType(t)
     }
     fetchDocs(tempRole)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
   const fetchDocs = async (currentRole: string | null) => {
