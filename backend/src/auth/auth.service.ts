@@ -447,4 +447,23 @@ export class AuthService {
       employeesDeleted: employeeIds.length,
     };
   }
+
+  async adminResetPassword(userId: string, newPassword: string): Promise<{ message: string }> {
+    if (!userId || !newPassword) {
+      throw new BadRequestException('userId and newPassword are required');
+    }
+    if (newPassword.length < 8) {
+      throw new BadRequestException('Password must be at least 8 characters');
+    }
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: hashedPassword, passwordChangedAt: new Date() },
+    });
+    return { message: `Password for user has been reset successfully.` };
+  }
 }

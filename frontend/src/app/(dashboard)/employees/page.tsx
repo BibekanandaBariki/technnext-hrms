@@ -24,6 +24,7 @@ import {
 
 interface Employee {
     id: string
+    userId: string
     employeeCode: string
     firstName: string
     lastName: string
@@ -87,6 +88,22 @@ export default function EmployeesPage() {
             toast.error("Failed to resend email")
         } finally {
             setResendingId(null)
+        }
+    }
+
+    const handleResetPassword = async (emp: Employee) => {
+        const newPassword = window.prompt(`Enter new password for ${emp.firstName} ${emp.lastName} (min 8 characters):`)
+        if (!newPassword) return
+        if (newPassword.length < 8) {
+            toast.error("Password must be at least 8 characters")
+            return
+        }
+        try {
+            await api.post('/auth/admin-reset-password', { userId: emp.userId, newPassword })
+            toast.success(`Password reset for ${emp.firstName} ${emp.lastName}`)
+        } catch (error) {
+            const err = error as { response?: { data?: { message?: string } } }
+            toast.error(err.response?.data?.message || "Failed to reset password")
         }
     }
 
@@ -189,6 +206,16 @@ export default function EmployeesPage() {
                                                 <Link href={`/employees/${emp.id}/edit`} className="text-sm font-medium text-green-600 hover:underline">
                                                     Edit
                                                 </Link>
+                                                {role === 'ADMIN' && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-xs text-orange-600 hover:text-orange-800"
+                                                        onClick={() => handleResetPassword(emp)}
+                                                    >
+                                                        Reset Pwd
+                                                    </Button>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))

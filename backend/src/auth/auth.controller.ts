@@ -22,7 +22,7 @@ import type { User } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('login')
   async login(
@@ -90,5 +90,14 @@ export class AuthController {
     employeesDeleted: number;
   }> {
     return this.authService.purgeAllExcept(dto.email, dto.newPassword);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @Post('admin-reset-password')
+  async adminResetPassword(
+    @Body() dto: { userId: string; newPassword: string },
+  ): Promise<{ message: string }> {
+    return this.authService.adminResetPassword(dto.userId, dto.newPassword);
   }
 }
