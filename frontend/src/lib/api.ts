@@ -29,7 +29,8 @@ api.interceptors.response.use(
                 reqUrl.includes('/auth/login') ||
                 reqUrl.includes('/auth/register') ||
                 reqUrl.includes('/auth/forgot-password') ||
-                reqUrl.includes('/auth/reset-password');
+                reqUrl.includes('/auth/reset-password') ||
+                reqUrl.includes('/auth/google-login');
             if (typeof window !== 'undefined' && !isAuthEndpoint) {
                 const token = localStorage.getItem('token');
                 if (token) {

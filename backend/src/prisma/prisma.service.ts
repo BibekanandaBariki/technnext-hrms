@@ -7,14 +7,19 @@ import { PrismaPg } from '@prisma/adapter-pg';
 @Injectable()
 export class PrismaService
   extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
-  constructor(private configService: ConfigService) {
-    const connectionString = configService.get<string>('DATABASE_URL');
-    const pool = new Pool({ connectionString });
-    const adapter = new PrismaPg(pool);
+  implements OnModuleInit, OnModuleDestroy {
+  constructor() {
+    const connectionString = process.env.DATABASE_URL;
 
-    super({ adapter });
+    // Only use the PG adapter if it's a PostgreSQL connection string
+    if (connectionString?.startsWith('postgres') || connectionString?.startsWith('postgresql')) {
+      const pool = new Pool({ connectionString });
+      const adapter = new PrismaPg(pool);
+      super({ adapter } as any);
+    } else {
+      // Fallback to default SQLite behavior for local development
+      super();
+    }
   }
 
   async onModuleInit() {
