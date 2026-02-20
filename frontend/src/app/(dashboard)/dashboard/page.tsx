@@ -7,7 +7,7 @@ import { Users, UserCheck, CalendarDays, Briefcase } from "lucide-react"
 import api from "@/lib/api"
 // import { toast } from "sonner" // Removed unused toast
 
-const REQUIRED_TYPES = ["GOVERNMENT_ID","TAX_ID","RESUME","PROFILE_PHOTO","BANK_PROOF","EDUCATION","EXPERIENCE","OFFER_LETTER"]
+const REQUIRED_TYPES = ["GOVERNMENT_ID", "TAX_ID", "RESUME", "PROFILE_PHOTO", "BANK_PROOF", "EDUCATION", "EXPERIENCE", "OFFER_LETTER"]
 
 interface DashboardStats {
     totalEmployees: number
@@ -80,19 +80,25 @@ export default function DashboardPage() {
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('user')
-            if (stored) {
-                const u = JSON.parse(stored)
-                setUser(u)
+            if (stored && stored !== 'undefined') {
+                try {
+                    const u = JSON.parse(stored)
+                    setUser(u)
 
-                if (u.role === 'ADMIN' || u.role === 'HR') {
-                    fetchAdminStats()
-                } else if (u.role === 'MANAGER') {
-                    fetchManagerStats()
-                    fetchManagerTeam()
-                    setLoading(false)
-                } else {
-                    fetchEmployeeDocuments()
-                    setLoading(false)
+                    if (u?.role === 'ADMIN' || u?.role === 'HR') {
+                        fetchAdminStats()
+                    } else if (u?.role === 'MANAGER') {
+                        fetchManagerStats()
+                        fetchManagerTeam()
+                        setLoading(false)
+                    } else {
+                        fetchEmployeeDocuments()
+                        setLoading(false)
+                    }
+                } catch (e) {
+                    console.error("Failed to parse user from localStorage", e)
+                    localStorage.removeItem('user')
+                    window.location.href = '/login'
                 }
             } else {
                 // Redirect to login if not authenticated
@@ -238,8 +244,8 @@ export default function DashboardPage() {
                                                 : "Missing"
                                         const color =
                                             status === "Approved" ? "text-green-600" :
-                                            status === "Pending" ? "text-yellow-600" :
-                                            "text-red-600"
+                                                status === "Pending" ? "text-yellow-600" :
+                                                    "text-red-600"
                                         return (
                                             <li key={t} className="flex items-center justify-between">
                                                 <span className="text-sm">{t.replace("_", " ")}</span>
@@ -271,54 +277,54 @@ export default function DashboardPage() {
                 <div className="space-y-6">
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Team Size</CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{managerStats?.teamSize ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">Direct reports</p>
-                        </CardContent>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Team Size</CardTitle>
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{managerStats?.teamSize ?? 0}</div>
+                                <p className="text-xs text-muted-foreground">Direct reports</p>
+                            </CardContent>
                         </Card>
                         <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Present Today</CardTitle>
-                            <UserCheck className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{managerStats?.teamPresentToday ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">Attendance</p>
-                        </CardContent>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Present Today</CardTitle>
+                                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{managerStats?.teamPresentToday ?? 0}</div>
+                                <p className="text-xs text-muted-foreground">Attendance</p>
+                            </CardContent>
                         </Card>
                         <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Pending Leaves</CardTitle>
-                            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{managerStats?.teamPendingLeaves ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">Awaiting approval</p>
-                        </CardContent>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Pending Leaves</CardTitle>
+                                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{managerStats?.teamPendingLeaves ?? 0}</div>
+                                <p className="text-xs text-muted-foreground">Awaiting approval</p>
+                            </CardContent>
                         </Card>
                         <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Goals In Progress</CardTitle>
-                            <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{managerStats?.teamGoalsInProgress ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">Active goals</p>
-                        </CardContent>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Goals In Progress</CardTitle>
+                                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{managerStats?.teamGoalsInProgress ?? 0}</div>
+                                <p className="text-xs text-muted-foreground">Active goals</p>
+                            </CardContent>
                         </Card>
                         <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Reviews This Quarter</CardTitle>
-                            <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{managerStats?.reviewsThisQuarter ?? 0}</div>
-                            <p className="text-xs text-muted-foreground">Submitted</p>
-                        </CardContent>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Reviews This Quarter</CardTitle>
+                                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{managerStats?.reviewsThisQuarter ?? 0}</div>
+                                <p className="text-xs text-muted-foreground">Submitted</p>
+                            </CardContent>
                         </Card>
                     </div>
                     <Card>

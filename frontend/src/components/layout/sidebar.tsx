@@ -58,7 +58,7 @@ export function Sidebar() {
     if (typeof window !== "undefined") {
         try {
             const u = localStorage.getItem("user")
-            if (u) {
+            if (u && u !== "undefined") {
                 role = JSON.parse(u)?.role ?? null
             }
         } catch {

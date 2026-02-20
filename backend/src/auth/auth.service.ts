@@ -333,4 +333,116 @@ export class AuthService {
       sessionsDeleted: counts.sessionsDeleted,
     };
   }
+
+  async purgeAllExcept(
+    email: string,
+    newPassword: string,
+  ): Promise<{ preservedUserId: string; usersDeleted: number; employeesDeleted: number }> {
+    const preserved = await this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+    let preservedUserId: string;
+    const hashed = await bcrypt.hash(newPassword, 10);
+    if (!preserved) {
+      const created = await this.prisma.user.create({
+        data: {
+          email,
+          passwordHash: hashed,
+          role: 'ADMIN',
+          isActive: true,
+          emailVerified: true,
+          failedLoginCount: 0,
+          lockedUntil: null,
+          passwordChangedAt: new Date(),
+        },
+        select: { id: true },
+      });
+      preservedUserId = created.id;
+    } else {
+      const updated = await this.prisma.user.update({
+        where: { email },
+        data: {
+          passwordHash: hashed,
+          role: 'ADMIN',
+          isActive: true,
+          emailVerified: true,
+          failedLoginCount: 0,
+          lockedUntil: null,
+          passwordChangedAt: new Date(),
+        },
+        select: { id: true },
+      });
+      preservedUserId = updated.id;
+    }
+
+    const toDeleteUsers = await this.prisma.user.findMany({
+      where: { email: { not: email } },
+      select: { id: true },
+    });
+    const userIds = toDeleteUsers.map((u) => u.id);
+    const employees = await this.prisma.employee.findMany({
+      where: { userId: { in: userIds } },
+      select: { id: true },
+    });
+    const employeeIds = employees.map((e) => e.id);
+
+    await this.prisma.$transaction(async (prisma) => {
+      await prisma.payslip.deleteMany({
+        where: { payrollRecord: { is: { employeeId: { in: employeeIds } } } },
+      });
+      await prisma.payrollRecord.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      await prisma.salaryStructure.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      await prisma.attendance.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      await prisma.leave.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      await prisma.leaveBalance.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      await prisma.employeeDocument.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      await prisma.goal.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      await prisma.performanceReview.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      await prisma.probationReview.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      await prisma.taxDeclaration.deleteMany({
+        where: { employeeId: { in: employeeIds } },
+      });
+      await prisma.employee.deleteMany({
+        where: { id: { in: employeeIds } },
+      });
+
+      await prisma.session.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+      await prisma.passwordHistory.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+      await prisma.auditLog.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+      await prisma.user.deleteMany({
+        where: { id: { in: userIds } },
+      });
+    });
+
+    return {
+      preservedUserId,
+      usersDeleted: userIds.length,
+      employeesDeleted: employeeIds.length,
+    };
+  }
 }

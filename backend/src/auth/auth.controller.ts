@@ -13,6 +13,7 @@ import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
+import { PurgeExceptDto } from './dto/purge-except.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
@@ -78,5 +79,16 @@ export class AuthController {
   @Post('purge-users')
   async purgeUsers(): Promise<{ updated: number; sessionsDeleted: number }> {
     return this.authService.purgeNonAdminCredentials();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @Post('purge-except')
+  async purgeExcept(@Body() dto: PurgeExceptDto): Promise<{
+    preservedUserId: string;
+    usersDeleted: number;
+    employeesDeleted: number;
+  }> {
+    return this.authService.purgeAllExcept(dto.email, dto.newPassword);
   }
 }
