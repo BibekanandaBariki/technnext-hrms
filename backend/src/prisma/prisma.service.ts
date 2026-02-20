@@ -1,6 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { ConfigService } from '@nestjs/config';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
@@ -15,6 +14,7 @@ export class PrismaService
     if (connectionString?.startsWith('postgres') || connectionString?.startsWith('postgresql')) {
       const pool = new Pool({ connectionString });
       const adapter = new PrismaPg(pool);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
       super({ adapter } as any);
     } else {
       // Fallback to default SQLite behavior for local development

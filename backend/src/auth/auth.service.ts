@@ -24,7 +24,7 @@ export class AuthService {
     private configService: ConfigService,
     private prisma: PrismaService,
     private emailService: EmailService,
-  ) {}
+  ) { }
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findOne(email);
@@ -222,7 +222,9 @@ export class AuthService {
       }
       const user = await this.usersService.findOne(data.email);
       if (!user) {
-        throw new UnauthorizedException('No account found for this email');
+        throw new UnauthorizedException(
+          'Access Denied. Your Google account is not registered in the system. Please contact HR or Administrator.',
+        );
       }
       const { passwordHash, ...safeUser } = user;
       const payload = { email: user.email, sub: user.id, role: user.role };
